@@ -1,0 +1,15 @@
+version: 2
+updates:
+- package-ecosystem: gomod
+  directory: "/"
+  schedule:
+    interval: weekly
+    time: "11:00"
+  open-pull-requests-limit: 10
+  target-branch: development
+  groups:
+    dev-dependencies:
+      patterns:
+        - "*"  # Include all dependencies by default
+      exclude-patterns:
+        - "*gopsutil*" # Exclude gopsutil due to history of cross-compile breakage
