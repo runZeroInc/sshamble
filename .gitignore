@@ -1,0 +1,5 @@
+*.log
+*.bin
+.DS_Store
+data
+crypto.patch
