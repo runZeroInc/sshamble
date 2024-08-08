@@ -42,7 +42,7 @@ $ sshamble scan -o results.json 192.168.0.0/24
 
 Analyze the results using:
 
-$ sshamble analyze results-directory results.json
+$ sshamble analyze -o results-directory results.json
 
 `,
 }
