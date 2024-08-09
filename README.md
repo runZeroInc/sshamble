@@ -14,10 +14,23 @@ You can reach our team via research[α𝓽]runZero.com.
 
 https://SSHamble.com/
 
+
+## Installation
+
+SSHamble requires a recent version of Go (1.22.6+)
+
+$ go install github.com/runZeroInc/sshamble@latest
+
+To build from source locally:
+
+$ git clone https://github.com/runZeroInc/sshamble
+$ cd sshamble
+$ go build -o sshamble
+
 ## Usage
 
 ```
-$ go run main.go -h
+$ sshamble scan -h
 
 ▀██▄  ▀███████████████████████████████████████████████████████████████████████████████████████████
   ▀██▄
