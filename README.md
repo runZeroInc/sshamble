@@ -19,13 +19,17 @@ https://SSHamble.com/
 
 SSHamble requires a recent version of Go (1.22.6+)
 
+```shell
 $ go install github.com/runZeroInc/sshamble@latest
+```
 
 To build from source locally:
 
+```shell
 $ git clone https://github.com/runZeroInc/sshamble
 $ cd sshamble
 $ go build -o sshamble
+```
 
 ## Usage
 
