@@ -19,6 +19,8 @@ https://SSHamble.com/
 
 SSHamble requires a recent version of Go (1.22.6+)
 
+You can use Go to download the binary into the `bin` directory in your GOPATH.
+
 ```shell
 $ go install github.com/runZeroInc/sshamble@latest
 ```
