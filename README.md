@@ -1,6 +1,6 @@
 # sshamble
 
-SSHamble is research tool for SSH implementations that includes:
+SSHamble is a research tool for SSH implementations that includes:
 
 * Interesting attacks against authentication
 * Post-session authentication attacks
