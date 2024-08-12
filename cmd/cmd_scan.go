@@ -177,7 +177,7 @@ func runScan(cmd *cobra.Command, args []string) {
 		case "stderr":
 			outputWriter = os.Stderr
 		default:
-			outputWriter, err = os.OpenFile(gOutput, os.O_WRONLY|os.O_CREATE, 0o600)
+			outputWriter, err = os.OpenFile(gOutput, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 			if err != nil {
 				conf.Logger.Fatalf("failed to create output file %s: %v", gOutput, err)
 			}
