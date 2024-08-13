@@ -35,7 +35,7 @@ jobs:
           DIR="$(mktemp -d)"
           mkdir "$DIR/sshamble"
           cp LICENSE.md "$DIR/sshamble"
-          go build -o "$DIR/sshamble" -ldflags "-s -w -X main.Version=$VERSION" -trimpath ./cmd/...
+          go build -o "$DIR/sshamble" -ldflags "-s -w -X github.com/runZeroInc/sshamble/cmd/main.Version=$VERSION" -trimpath
           if [ "$GOOS" == "windows" ]; then
             ( cd "$DIR"; zip sshamble.zip -r sshamble )
             mv "$DIR/sshamble.zip" "sshamble-$VERSION-$GOOS-$GOARCH.zip"
