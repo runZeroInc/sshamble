@@ -17,9 +17,12 @@ https://SSHamble.com/
 
 ## Installation
 
-SSHamble requires a recent version of Go (1.22.6+)
+Binaries are available from the [releases page](https://github.com/runZeroInc/sshamble/releases).
 
-You can use Go to download the binary into the `bin` directory in your GOPATH.
+
+To build SSHamble from source, ensure that you have a recent version of Go (1.22.6+) installed.
+
+You can use Go to install a binary into the `bin` directory in your GOPATH.
 
 If you are using macOS, you may run into errors at runtime unless you disable CGO before building:
 ```shell
@@ -49,7 +52,7 @@ $ go build -o sshamble
 
 ## Usage
 
-```
+```console
 $ sshamble -h
 
 ▀██▄  ▀███████████████████████████████████████████████████████████████████████████████████████████
@@ -89,7 +92,7 @@ Use "sshamble [command] --help" for more information about a command.
 
 ## Scans
 
-```shell
+```console
 $ sshamble -h
 
 Enumerates a set of targets for SSH capabilities and exposures
