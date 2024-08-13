@@ -35,7 +35,7 @@ jobs:
           VERSION="$(git describe --tags)"
           DIR="$(mktemp -d)"
           mkdir "$DIR/sshamble"
-          cp "$RUNNER_TEMP/LICENSE" "$DIR/sshamble"
+          cp "$RUNNER_TEMP/LICENSE.md" "$DIR/sshamble"
           go build -o "$DIR/sshamble" -ldflags "-s -w -X main.Version=$VERSION" -trimpath ./cmd/...
           if [ "$GOOS" == "windows" ]; then
             ( cd "$DIR"; zip sshamble.zip -r sshamble )
