@@ -4,6 +4,6 @@ import (
 	"embed"
 )
 
-//go:embed *.dat.xz
+//go:embed all:*
 
 var BadKeys embed.FS
