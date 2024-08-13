@@ -38,6 +38,15 @@ $ cd sshamble
 $ go build -o sshamble
 ```
 
+To enable experimental [badkeys](https://badkeys.info) support, run the generator first:
+```shell
+$ git clone https://github.com/runZeroInc/sshamble
+$ cd sshamble
+$ go generate ./...
+$ go build -o sshamble
+```
+
+
 ## Usage
 
 ```

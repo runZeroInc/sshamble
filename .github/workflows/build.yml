@@ -31,7 +31,7 @@ jobs:
           fetch-depth: 0
       - name: Build binary
         run: |
-          cp LICENSE "$RUNNER_TEMP/LICENSE"
+          cp LICENSE.md "$RUNNER_TEMP/LICENSE.md"
           VERSION="$(git describe --tags)"
           DIR="$(mktemp -d)"
           mkdir "$DIR/sshamble"
