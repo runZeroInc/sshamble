@@ -31,11 +31,10 @@ jobs:
           fetch-depth: 0
       - name: Build binary
         run: |
-          cp LICENSE.md "$RUNNER_TEMP/LICENSE.md"
           VERSION="$(git describe --tags)"
           DIR="$(mktemp -d)"
           mkdir "$DIR/sshamble"
-          cp "$RUNNER_TEMP/LICENSE.md" "$DIR/sshamble"
+          cp LICENSE.md "$DIR/sshamble"
           go build -o "$DIR/sshamble" -ldflags "-s -w -X main.Version=$VERSION" -trimpath ./cmd/...
           if [ "$GOOS" == "windows" ]; then
             ( cd "$DIR"; zip sshamble.zip -r sshamble )
