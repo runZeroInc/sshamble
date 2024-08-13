@@ -1,6 +1,6 @@
 ## SSHamble
 
-SSHamble is released under the BSD 2-Clause license.
+SSHamble is released under the BSD 2-clause license.
 
 ```plain
 Copyright (c) 2024, runZero, Inc
@@ -64,7 +64,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## badkeys
 
-The badkeys directory contains resources from https://github.com/badkeys/badkeys and used under the MIT license.
+The badkeys directory contains resources from https://github.com/badkeys/badkeys and are used under the MIT license.
 
 ```plain
 Copyright (c) Hanno Böck
@@ -92,7 +92,7 @@ SOFTWARE.
 
 ## workflows
 
-The GitHub workflows contain resources from https://github.com/FiloSottile/age/ and are used under the BSD 3-Clause license.
+The GitHub workflows contain resources from https://github.com/FiloSottile/age/ and are used under the BSD 3-clause license.
 
 ```plain
 Copyright 2019 The age Authors
