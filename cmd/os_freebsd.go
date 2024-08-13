@@ -1,4 +1,4 @@
-//go:build !windows,!freebsd
+//go:build freebsd
 
 package cmd
 
@@ -15,8 +15,8 @@ func increaseFileLimit() {
 	limits := []int{999999, 99999, 49999, 32766, 9999, 4999, 2048}
 
 	for _, l := range limits {
-		rLimit.Max = uint64(l)
-		rLimit.Cur = uint64(l)
+		rLimit.Max = int64(l)
+		rLimit.Cur = int64(l)
 		err = syscall.Setrlimit(syscall.RLIMIT_NOFILE, &rLimit)
 		if err == nil {
 			return
