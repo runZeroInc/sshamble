@@ -1,6 +1,6 @@
 ## SSHamble
 
-SSHamble is released under the BSD 2-Clause License.
+SSHamble is released under the BSD 2-Clause license.
 
 ```plain
 Copyright (c) 2024, runZero, Inc
@@ -92,7 +92,7 @@ SOFTWARE.
 
 ## workflows
 
-The GitHub workflows contain resources from https://github.com/FiloSottile/age/ and are used under BSD 3-Clause.
+The GitHub workflows contain resources from https://github.com/FiloSottile/age/ and are used under the BSD 3-Clause license.
 
 ```plain
 Copyright 2019 The age Authors
