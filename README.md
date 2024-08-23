@@ -39,6 +39,7 @@ To build from source locally:
 $ git clone https://github.com/runZeroInc/sshamble
 $ cd sshamble
 $ go build -o sshamble
+$ ./sshamble -h
 ```
 
 To enable experimental [badkeys](https://badkeys.info) support, run the generator first:
@@ -47,13 +48,14 @@ $ git clone https://github.com/runZeroInc/sshamble
 $ cd sshamble
 $ go generate ./...
 $ go build -o sshamble
+$ ./sshamble -h
 ```
 
 
 ## Usage
 
 ```console
-$ sshamble -h
+$ ./sshamble -h
 
 ▀██▄  ▀███████████████████████████████████████████████████████████████████████████████████████████
   ▀██▄
@@ -70,11 +72,11 @@ An exploration tool for (in)secure shell services.
 
 Start a network scan using:
 
-$ sshamble scan -o results.json 192.168.0.0/24
+$ ./sshamble scan -o results.json 192.168.0.0/24
 
 Analyze the results using:
 
-$ sshamble analyze -o results-directory results.json
+$ ./sshamble analyze -o results-directory results.json
 
 Usage:
   sshamble [command]
@@ -93,7 +95,7 @@ Use "sshamble [command] --help" for more information about a command.
 ## Scans
 
 ```console
-$ sshamble -h
+$ ./sshamble scan -h
 
 Enumerates a set of targets for SSH capabilities and exposures
 
