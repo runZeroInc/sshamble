@@ -38,12 +38,23 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 	conf := &ScanConfig{}
 	configureLogging(conf)
 
-	if gOutput == "" {
+	if gOutput == "" || gOutput == "-" || gOutput == "stdout" {
 		conf.Logger.Fatalf("no output directory supplied (-o)")
 	}
 
-	if len(args) == 2 {
+	if len(args) < 1 {
 		conf.Logger.Fatalf("no input files specified")
+	}
+
+	if err := os.MkdirAll(gOutput, 0o755); err != nil {
+		conf.Logger.Fatalf("failed to create output directory '%s': %v", gOutput, err)
+	}
+
+	bkc := badkeys.NewCache(conf.Logger)
+	if _, err := bkc.LoadBlocklist(); err == nil {
+		conf.BadKeyCache = bkc
+	} else {
+		conf.Logger.Infof("badkeys detection is not active, run `sshamble badkeys-update` to enable")
 	}
 
 	if err := os.MkdirAll(gOutput, 0o755); err != nil {
