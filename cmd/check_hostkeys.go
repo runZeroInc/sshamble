@@ -36,6 +36,9 @@ func sshCheckBadKeysBlocklist(addr string, conf *ScanConfig, options *auth.Optio
 		if err != nil {
 			continue
 		}
+
+		conf.Logger.Warnf("%s %s is using a compromised hostkey: %s)", addr, tname, bkr.ToURL())
+
 		root.AddVuln(auth.VulnResult{
 			ID:    "badkeys-" + bkr.RepoType + "-" + bkr.Repo + "-" + bkr.RepoPath + "-" + hkt,
 			Ref:   "https://badkeys.info/",
