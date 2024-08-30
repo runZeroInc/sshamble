@@ -8,9 +8,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/runZeroInc/sshamble/crypto/ssh"
+	"github.com/sirupsen/logrus"
 )
 
-func TestBasicRSA(t *testing.T) {
+func TestCacheBasics(t *testing.T) {
 	pubRaw, err := base64.StdEncoding.DecodeString(TestKeyDebOpenSSLRSA3072BE3229491)
 	if err != nil {
 		t.Fatalf("failed to decode public key: %v", err)
@@ -40,7 +41,21 @@ func TestBasicRSA(t *testing.T) {
 		KeyPath:  "rsa3072/ssh/be32/29491.key",
 	}
 
-	res, err := LookupPrefix(hash)
+	cache := NewCache(logrus.StandardLogger())
+	if err != nil {
+		t.Fatalf("could not create cache: %v", err)
+	}
+
+	if _, _, err := cache.Update(); err != nil {
+		t.Fatalf("could not update blocklist: %v", err)
+	}
+
+	bl, err := cache.LoadBlocklist()
+	if err != nil {
+		t.Fatalf("could not load blocklist: %v", err)
+	}
+
+	res, err := bl.LookupPrefix(hash)
 	if err != nil {
 		t.Fatalf("failed to find: %v", err)
 	}
@@ -53,11 +68,9 @@ func TestBasicRSA(t *testing.T) {
 	if resURL != expURL {
 		t.Errorf("unexpected url %s got %s", expURL, resURL)
 	}
-}
 
-func TestMissing(t *testing.T) {
-	hash := []byte{0xff, 0xff, 0x00, 0xe1, 0xbf, 0xda, 0x4c, 0xbe, 0xd1, 0xc8, 0x11, 0x56, 0x1f, 0x11, 0xae}
-	res, err := LookupPrefix(hash)
+	hash = []byte{0xff, 0xff, 0x00, 0xe1, 0xbf, 0xda, 0x4c, 0xbe, 0xd1, 0xc8, 0x11, 0x56, 0x1f, 0x11, 0xae}
+	res, err = bl.LookupPrefix(hash)
 	if err == nil {
 		t.Fatalf("bad hash returned result: %v", res)
 	}

@@ -1,28 +1,51 @@
 package badkeys
 
+import (
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+
+	"github.com/runZeroInc/sshamble/crypto/ssh"
+)
+
 const BadKeysMetaURL = "https://update.badkeys.info/v0/badkeysdata.json"
 
-const BlockLength = 24
-const BlockHashPrefix = 15
-
-type Meta struct {
-	BKFormat        int    `json:"bkformat,omitempty"`
-	Date            string `json:"date,omitempty"`
-	BlocklistURL    string `json:"blocklist_url,omitempty"`
-	BlocklistSHA256 string `json:"blocklist_sha256,omitempty"`
-	LookupURL       string `json:"lookup_url,omitempty"`
-	LookupSHA256    string `json:"lookup_sha256,omitempty"`
-	Blocklists      []Repo `json:"blocklists,omitempty"`
+func PrefixFromPublicKey(pub ssh.PublicKey) ([]byte, error) {
+	var res []byte
+	switch pub.Type() {
+	case ssh.KeyAlgoRSA:
+		pk, ok := pub.(ssh.RSAPublicKey)
+		if !ok {
+			return nil, fmt.Errorf("%s doesn't implement RSAPublicKey", pub.Type())
+		}
+		res = pk.ToRSAPublicKey().N.Bytes()
+	default:
+		res = pub.Marshal()
+	}
+	hash := sha256.Sum256(res)
+	return hash[0:15], nil
 }
 
-type Repo struct {
-	ID   int    `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
-	Type string `json:"type,omitempty"`
-	Repo string `json:"repo,omitempty"`
-	Path string `json:"path,omitempty"`
+// GetExecutablePath returns the full path to the running binary
+func GetExecutablePath() string {
+	filename, _ := os.Executable()
+	filename, _ = filepath.Abs(filename)
+	return filename
 }
 
-type Repos map[uint8]Repo
-type Dirs []string
-type Paths []string
+// GetExecutableDir returns the full path to the running binary's directory
+func GetExecutableDir() string {
+	return filepath.Dir(GetExecutablePath())
+}
+
+func ReadBadKeysManifest(r io.Reader) (*Meta, error) {
+	meta := &Meta{}
+	jdec := json.NewDecoder(r)
+	if err := jdec.Decode(meta); err != nil {
+		return meta, fmt.Errorf("decode: %v", err)
+	}
+	return meta, nil
+}

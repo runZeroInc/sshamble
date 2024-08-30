@@ -160,15 +160,15 @@ func (conf *ScanConfig) AnalyzeResult(res *auth.AuthResult, stats *AnalysisStats
 		return nil
 	}
 
-	if isHoneypot(res) {
+	if isHoneypot(conf, res) {
 		conf.writeAnalysisRecord("honeypots", res)
 	}
 
-	if isBadKey(res) {
+	if conf.BadKeyCache != nil && isBadKey(conf, res) {
 		conf.writeAnalysisRecord("badkeys", res)
 	}
 
-	if name := isKnownDevice(res); name != "" {
+	if name := isKnownDevice(conf, res); name != "" {
 		conf.writeAnalysisRecord("session_known_"+name, res)
 	} else if res.SessionMethod != "" {
 		conf.writeAnalysisRecord("session_unknown", res)
@@ -261,7 +261,7 @@ var commonHoneypotStrings = []string{
 	"Welcome to Ubuntu",
 }
 
-func isHoneypot(res *auth.AuthResult) bool {
+func isHoneypot(conf *ScanConfig, res *auth.AuthResult) bool {
 	for _, t := range commonHoneypotStrings {
 		if strings.Contains(res.SessionOutput, t) {
 			return true
@@ -270,7 +270,7 @@ func isHoneypot(res *auth.AuthResult) bool {
 	return false
 }
 
-func isBadKey(res *auth.AuthResult) bool {
+func isBadKey(conf *ScanConfig, res *auth.AuthResult) bool {
 	found := 0
 	for hkt, hkv := range res.HostKeys {
 		raw, err := base64.StdEncoding.DecodeString(hkv)
@@ -285,7 +285,7 @@ func isBadKey(res *auth.AuthResult) bool {
 		if err != nil {
 			continue
 		}
-		bkr, err := badkeys.LookupPrefix(hpre)
+		bkr, err := conf.BadKeyCache.Blocklist.LookupPrefix(hpre)
 		if err != nil {
 			continue
 		}
@@ -328,7 +328,7 @@ var commonDeviceStrings = map[string]string{
 	"l2switch":     "Welcome to Layer 2 Managed Switch",
 }
 
-func isKnownDevice(res *auth.AuthResult) string {
+func isKnownDevice(conf *ScanConfig, res *auth.AuthResult) string {
 	for k, v := range commonDeviceStrings {
 		if strings.Contains(strings.ToLower(res.SessionOutput), strings.ToLower(v)) {
 			return k

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/runZeroInc/sshamble/auth"
+	"github.com/runZeroInc/sshamble/badkeys"
 	"github.com/runZeroInc/sshamble/crypto/ssh"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -142,6 +143,7 @@ type ScanConfig struct {
 	TestKeyRSA2048 ssh.Signer
 	TestKeyRSA4096 ssh.Signer
 	TestKeyED25519 ssh.Signer
+	BadKeyCache    *badkeys.Cache
 	outMutex       sync.Mutex
 	statResult     atomic.Uint64
 }
