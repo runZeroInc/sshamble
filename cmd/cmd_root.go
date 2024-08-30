@@ -67,6 +67,7 @@ func init() {
 	initSessionChecks()
 	initUserEnumChecks()
 	initGSSAPIChecks()
+	initHostkeyChecks()
 
 	cobra.OnInitialize(initConfig)
 

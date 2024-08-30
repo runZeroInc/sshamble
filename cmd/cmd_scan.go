@@ -195,6 +195,13 @@ func runScan(cmd *cobra.Command, args []string) {
 		conf.Logger.Warnf("password field is singular, but contains a comma (%s), consider --password-file instead", gPassword)
 	}
 
+	bkc := badkeys.NewCache(conf.Logger)
+	if _, err := bkc.LoadBlocklist(); err == nil {
+		conf.BadKeyCache = bkc
+	} else {
+		conf.Logger.Infof("badkeys detection is not active, run `sshamble badkeys-update` to enable")
+	}
+
 	// Parse the port list
 	scanPorts, err := parsePorts(gPorts)
 	if err != nil {
@@ -477,6 +484,14 @@ func (conf *ScanConfig) GetSession(addr string, options *auth.Options, cached *a
 
 	// Collect any additional host keys if needed
 	conf.GetAllHostKeys(addr, options, root, cached)
+
+	// Test for weak and compromised hostkeys
+	hostkeyChecks := []sshCheckFunc{
+		sshCheckBadKeysBlocklist,
+	}
+	for _, check := range hostkeyChecks {
+		_ = check(addr, conf, options, root)
+	}
 
 	// Exit early if we obtained a session from 'none'
 	if root.SessionMethod != "" {
