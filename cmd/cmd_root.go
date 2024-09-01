@@ -74,6 +74,7 @@ func init() {
 	rootCmd.AddCommand(scanCmd)
 	rootCmd.AddCommand(analyzeCmd)
 	rootCmd.AddCommand(badkeysCmd)
+	rootCmd.AddCommand(hostkeydbCmd)
 
 	rootCmd.CompletionOptions = cobra.CompletionOptions{DisableDefaultCmd: true}
 }
