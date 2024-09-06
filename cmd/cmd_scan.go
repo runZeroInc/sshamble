@@ -123,7 +123,7 @@ func init() {
 	scanCmd.Flags().StringVar(&gPrivateKeyPassphrase, "private-key-passphrase", "", "The optional passphrase for a private key file")
 	scanCmd.Flags().StringVar(&gPassword, "password", "", "An optional password to try for authentication")
 	scanCmd.Flags().StringVar(&gPasswordFile, "password-file", "", "An optional file with clear-text passwords to try for authentication")
-	scanCmd.Flags().StringVarP(&gInteract, "interact", "I", "none", "Open an interactive shell for the 'first', 'all', or 'none' sessioms")
+	scanCmd.Flags().StringVarP(&gInteract, "interact", "I", "none", "Open an interactive shell for the 'first', 'all', or 'none' sessions")
 	scanCmd.Flags().StringVar(&gInteractAuto, "interact-auto", "pty,shell", "A comma-separated set of commands to run in the interactive session")
 	scanCmd.Flags().UintVar(&gUserEnumTestCount, "userenum-test-count", 2500, "The number of tests to apply during username enumeration")
 	scanCmd.Flags().UintVar(&gUserEnumMaxPerSessionCount, "userenum-max-per-session-count", 1023, "The maximum number of authentication atempts per session")

@@ -109,7 +109,7 @@ Flags:
       --config string                         config file (default is $HOME/.sshamble.json)
   -h, --help                                  help for scan
   -i, --input-targets string                  The optional file to read targets from
-  -I, --interact string                       Open an interactive shell for the 'first', 'all', or 'none' sessioms (default "none")
+  -I, --interact string                       Open an interactive shell for the 'first', 'all', or 'none' sessions (default "none")
       --interact-auto string                  A comma-separated set of commands to run in the interactive session (default "pty,shell")
   -l, --log string                            The file to write logs to (default is stderr) (default "-")
   -L, --log-level string                      The log level to write (trace,debug,info,warn,error) (default "info")
