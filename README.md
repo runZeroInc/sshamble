@@ -126,7 +126,7 @@ Flags:
       --pubkey-hunt-file string               The optional file containing public keys to hunt
       --retries uint                          The retry count for subsequent failed connections after an initial success (default 2)
       --timeout uint                          The number of seconds to wait for a target to respond (default 5)
-      --userenum-max-per-session-count uint   The maximum number of authentication atempts per session (default 1023)
+      --userenum-max-per-session-count uint   The maximum number of authentication attempts per session (default 1023)
       --userenum-test-count uint              The number of tests to apply during username enumeration (default 2500)
   -u, --users string                          The list of usernames to test on each target (comma-separated) (default "root")
 ```
