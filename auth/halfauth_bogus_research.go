@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/runZeroInc/sshamble/crypto/ssh"
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 )
 
 type HalfSignerBogus struct {

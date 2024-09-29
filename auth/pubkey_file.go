@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/runZeroInc/sshamble/crypto/ssh"
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/sirupsen/logrus"
 )
 

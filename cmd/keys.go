@@ -10,7 +10,7 @@ import (
 	"encoding/pem"
 	"os"
 
-	"github.com/runZeroInc/sshamble/crypto/ssh"
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 )
 
 func generateTestKeys(conf *ScanConfig) {

@@ -5,8 +5,8 @@ import (
 	"encoding/base64"
 	"time"
 
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
-	"github.com/runZeroInc/sshamble/crypto/ssh"
 )
 
 func genRandomPassword() string {

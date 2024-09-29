@@ -3,8 +3,8 @@ package cmd
 import (
 	"io"
 
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
-	"github.com/runZeroInc/sshamble/crypto/ssh"
 )
 
 func sessionGetSTDIO(ses *ssh.Session) (*auth.SyncByteBuffer, *auth.SyncByteBuffer, io.WriteCloser, error) {

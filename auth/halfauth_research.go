@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/runZeroInc/sshamble/crypto/ssh"
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 )
 
 var ErrHalfAuth = errors.New("half-auth")

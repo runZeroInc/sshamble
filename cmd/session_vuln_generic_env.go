@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
-	"github.com/runZeroInc/sshamble/crypto/ssh"
 )
 
 const checkVulnGenericEnv = "vuln-generic-env"

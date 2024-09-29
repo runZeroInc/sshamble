@@ -3,8 +3,8 @@ package cmd
 import (
 	"strings"
 
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
-	"github.com/runZeroInc/sshamble/crypto/ssh"
 )
 
 func sshCheckKeyboardHelper(addr string, tname string, conf *ScanConfig, options *auth.Options, root *auth.AuthResult, testPass string) *auth.AuthResult {

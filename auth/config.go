@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"github.com/runZeroInc/sshamble/crypto/ssh"
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 )
 
 const (

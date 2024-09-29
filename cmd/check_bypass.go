@@ -4,8 +4,8 @@ import (
 	"net"
 	"strings"
 
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
-	"github.com/runZeroInc/sshamble/crypto/ssh"
 )
 
 func bypassAtInterestingStage(tname string, addr string, conf *ScanConfig, res *auth.AuthResult) bool {

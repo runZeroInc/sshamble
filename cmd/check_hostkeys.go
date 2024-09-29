@@ -3,9 +3,9 @@ package cmd
 import (
 	"encoding/base64"
 
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
 	"github.com/runZeroInc/sshamble/badkeys"
-	"github.com/runZeroInc/sshamble/crypto/ssh"
 )
 
 const checkBadKeysBlocklist = "badkeys-blocklist"

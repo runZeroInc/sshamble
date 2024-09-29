@@ -13,9 +13,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
 	"github.com/runZeroInc/sshamble/badkeys"
-	"github.com/runZeroInc/sshamble/crypto/ssh"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

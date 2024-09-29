@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/runZeroInc/sshamble/crypto/ssh"
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 )
 
 type VulnResult struct {

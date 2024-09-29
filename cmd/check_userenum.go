@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
-	"github.com/runZeroInc/sshamble/crypto/ssh"
 	"gonum.org/v1/gonum/stat"
 )
 

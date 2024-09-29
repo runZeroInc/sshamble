@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
-	"github.com/runZeroInc/sshamble/crypto/ssh"
 )
 
 // TODO: Complete implementation
