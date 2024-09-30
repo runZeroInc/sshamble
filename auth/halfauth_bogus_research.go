@@ -1,14 +1,12 @@
 package auth
 
 import (
+	"crypto/rand"
 	"fmt"
 	"io"
 
-	"crypto/rand"
-
 	"github.com/runZeroInc/excrypto/crypto"
 	"github.com/runZeroInc/excrypto/crypto/rsa"
-
 	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 )
 

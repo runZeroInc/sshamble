@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"github.com/runZeroInc/sshamble/badkeys"
 	"github.com/spf13/cobra"
+
+	"github.com/runZeroInc/sshamble/badkeys"
 )
 
 // badkeysCmd processes a scan output file and buckets results

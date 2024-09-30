@@ -13,11 +13,12 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+
 	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
 	"github.com/runZeroInc/sshamble/badkeys"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
 
 // scanCmd handles scanning

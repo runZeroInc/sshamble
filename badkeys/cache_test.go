@@ -7,8 +7,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/sirupsen/logrus"
+
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 )
 
 func TestCacheBasics(t *testing.T) {

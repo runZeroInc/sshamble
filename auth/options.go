@@ -5,8 +5,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/sirupsen/logrus"
+
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 )
 
 type (

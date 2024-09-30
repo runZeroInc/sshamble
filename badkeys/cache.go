@@ -14,10 +14,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/runZeroInc/excrypto/crypto/sha256"
-
 	"github.com/sirupsen/logrus"
 	"github.com/ulikunitz/xz"
+
+	"github.com/runZeroInc/excrypto/crypto/sha256"
 )
 
 const MaxLookupLine = 4096

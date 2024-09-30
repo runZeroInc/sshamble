@@ -16,9 +16,10 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/term"
+
 	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
-	"golang.org/x/term"
 )
 
 const (

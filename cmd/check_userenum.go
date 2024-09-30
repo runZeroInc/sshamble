@@ -10,10 +10,11 @@ import (
 	"sync"
 	"time"
 
+	"gonum.org/v1/gonum/stat"
+
 	"github.com/runZeroInc/excrypto/crypto/sha256"
 	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
-	"gonum.org/v1/gonum/stat"
 )
 
 type userenumAuthTracker struct {

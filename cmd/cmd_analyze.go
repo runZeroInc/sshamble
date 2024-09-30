@@ -12,10 +12,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
 	"github.com/runZeroInc/sshamble/badkeys"
-	"github.com/spf13/cobra"
 )
 
 // analyzeCmd processes a scan output file and buckets results

@@ -8,8 +8,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/sirupsen/logrus"
+
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 )
 
 type PubKeyEnt struct {
