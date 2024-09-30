@@ -3,7 +3,6 @@ package badkeys
 import (
 	"bufio"
 	"bytes"
-	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -14,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/runZeroInc/excrypto/crypto/sha256"
 
 	"github.com/sirupsen/logrus"
 	"github.com/ulikunitz/xz"

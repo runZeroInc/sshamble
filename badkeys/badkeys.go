@@ -1,12 +1,13 @@
 package badkeys
 
 import (
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/runZeroInc/excrypto/crypto/sha256"
 
 	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 )

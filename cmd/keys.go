@@ -3,13 +3,13 @@ package cmd
 import (
 	"bytes"
 	"crypto"
-	"crypto/ed25519"
 	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
 	"encoding/pem"
 	"os"
 
+	"github.com/runZeroInc/excrypto/crypto/ed25519"
+	"github.com/runZeroInc/excrypto/crypto/rsa"
+	"github.com/runZeroInc/excrypto/crypto/x509"
 	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 )
 

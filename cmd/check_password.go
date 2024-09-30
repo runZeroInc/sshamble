@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"crypto/rand"
 	"encoding/base64"
 	"time"
+
+	"crypto/rand"
 
 	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"

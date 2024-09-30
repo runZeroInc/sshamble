@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"math"
@@ -11,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/runZeroInc/excrypto/crypto/sha256"
 	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
 	"gonum.org/v1/gonum/stat"
