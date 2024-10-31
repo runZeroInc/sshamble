@@ -45,8 +45,8 @@ github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRI
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rogpeppe/go-internal v1.9.0 h1:73kH8U+JUqXU8lRuOHeVHaa/SZPifC7BkcraZVejAe8=
 github.com/rogpeppe/go-internal v1.9.0/go.mod h1:WtVeX8xhTBvf0smdhujwtBcq4Qrzq/fJaraNFVN+nFs=
-github.com/runZeroInc/excrypto v0.0.0-20241030142124-75e3c6471cfb h1:EKk+3VtnHmQv7jEOCtlcLV5mBooqMH2nPx1hUaRTu0s=
-github.com/runZeroInc/excrypto v0.0.0-20241030142124-75e3c6471cfb/go.mod h1:7Jws/lBWhmsGPb8bj/bzfCchS5G6k5E87X6ITI6aJ0w=
+github.com/runZeroInc/excrypto v0.0.0-20241031190348-e6b654af200d h1:u8m2QBhMEQnFNXCiIyYJziniDs60UglXDFkVX9v0y7c=
+github.com/runZeroInc/excrypto v0.0.0-20241031190348-e6b654af200d/go.mod h1:9AvgtmCEeneLCe5OJPZp5FvsuxWLOs6gc4+sdPkal80=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/sagikazarmark/locafero v0.6.0 h1:ON7AQg37yzcRPU69mt7gwhFEBwxI6P9T4Qu3N51bwOk=
 github.com/sagikazarmark/locafero v0.6.0/go.mod h1:77OmuIc6VTraTXKXIs/uvUxKGUXjE1GbemJYHqdNjX0=
