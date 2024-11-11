@@ -6,12 +6,12 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/mmcloughlin/professor v0.0.0-20170922221822-6b97112ab8b3
-	github.com/runZeroInc/excrypto v0.0.0-20241031190348-e6b654af200d
+	github.com/runZeroInc/excrypto v0.0.0-20241111182046-023b8d1ff84c
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/ulikunitz/xz v0.5.12
-	golang.org/x/term v0.25.0
+	golang.org/x/term v0.26.0
 	gonum.org/v1/gonum v0.15.1
 )
 
@@ -31,10 +31,10 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/weppos/publicsuffix-go v0.40.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect
-	golang.org/x/net v0.30.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
-	golang.org/x/text v0.19.0 // indirect
+	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f // indirect
+	golang.org/x/net v0.31.0 // indirect
+	golang.org/x/sys v0.27.0 // indirect
+	golang.org/x/text v0.20.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
