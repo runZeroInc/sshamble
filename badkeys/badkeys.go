@@ -1,6 +1,7 @@
 package badkeys
 
 import (
+	"crypto/dsa"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -29,6 +30,8 @@ func PrefixFromPublicKey(pub any) ([]byte, error) {
 		return nil, fmt.Errorf("unsupported ssh public key: %v", pub.Type())
 	case *rsa.PublicKey:
 		rawb = pub.N.Bytes()
+	case *dsa.PublicKey:
+		rawb = pub.Y.Bytes()
 	case *ecdsa.PublicKey:
 		rawb = pub.X.Bytes()
 	case ed25519.PublicKey:
@@ -36,7 +39,7 @@ func PrefixFromPublicKey(pub any) ([]byte, error) {
 	case x509.X25519PublicKey:
 		rawb = pub
 	case *ecdh.PublicKey:
-		rawb = pub.Bytes()
+		rawb = pub.Bytes() // Verify
 	default:
 		return nil, fmt.Errorf("unsupported key: %T", pub)
 	}
