@@ -34,6 +34,8 @@ github.com/logrusorgru/aurora/v3 v3.0.0 h1:R6zcoZZbvVcGMvDCKo45A9U/lzYyzl5NfYIvz
 github.com/logrusorgru/aurora/v3 v3.0.0/go.mod h1:vsR12bk5grlLvLXAYrBsb5Oc/N+LxAlxggSjiwMnCUc=
 github.com/magiconair/properties v1.8.7 h1:IeQXZAiQcpL9mgcAe1Nu6cX9LLw6ExEHKjN0VQdvPDY=
 github.com/magiconair/properties v1.8.7/go.mod h1:Dhd985XPs7jluiymwWYZ0G4Z61jb3vdS329zhj2hYo0=
+github.com/magiconair/properties v1.8.9 h1:nWcCbLq1N2v/cpNsy5WvQ37Fb+YElfq20WJ/a8RkpQM=
+github.com/magiconair/properties v1.8.9/go.mod h1:Dhd985XPs7jluiymwWYZ0G4Z61jb3vdS329zhj2hYo0=
 github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyuac5Z2hdY=
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/mmcloughlin/professor v0.0.0-20170922221822-6b97112ab8b3 h1:2YMbJ6WbdQI9K73chxh9OWMDsZ2PNjAIRGTonp3T0l0=
@@ -51,6 +53,8 @@ github.com/runZeroInc/excrypto v0.0.0-20241111182046-023b8d1ff84c h1:Hhj+FM12YOK
 github.com/runZeroInc/excrypto v0.0.0-20241111182046-023b8d1ff84c/go.mod h1:5sSXOJeVil1dn+RZX7ohflS/JsD9eaaT2joHp2R3wPI=
 github.com/runZeroInc/excrypto v0.0.0-20241206222946-256e7ab69d3b h1:DRMg/zqQuXrKA59SQbI2rHEjliwQH6rfdX6otmgMg6U=
 github.com/runZeroInc/excrypto v0.0.0-20241206222946-256e7ab69d3b/go.mod h1:ZUy4kTiOYkhRar1heQLG3jdmAG3iiA8O8IWc5d/2PG0=
+github.com/runZeroInc/excrypto v0.0.0-20241209025853-7f1d8e92b417 h1:xT5BE5D0Xth/AYdxXGV2qSQ/kkJoBjwC7TeTq0rtuyE=
+github.com/runZeroInc/excrypto v0.0.0-20241209025853-7f1d8e92b417/go.mod h1:GXoFbAWptR2Z5EcBiYwmpQ85+SGjEbgZNwreHqA59wk=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/sagikazarmark/locafero v0.6.0 h1:ON7AQg37yzcRPU69mt7gwhFEBwxI6P9T4Qu3N51bwOk=
 github.com/sagikazarmark/locafero v0.6.0/go.mod h1:77OmuIc6VTraTXKXIs/uvUxKGUXjE1GbemJYHqdNjX0=
