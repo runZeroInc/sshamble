@@ -40,6 +40,8 @@ func PrefixFromPublicKey(pub any) ([]byte, error) {
 		rawb = pub.Bytes() // Verify
 	case *dsa.PublicKey:
 		rawb = pub.Y.Bytes()
+	case nil:
+		return nil, fmt.Errorf("unsupported nil key")
 	default:
 		return nil, fmt.Errorf("unsupported key: %T", pub)
 	}
