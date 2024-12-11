@@ -6,7 +6,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/mmcloughlin/professor v0.0.0-20170922221822-6b97112ab8b3
-	github.com/runZeroInc/excrypto v0.0.0-20241209025853-7f1d8e92b417
+	github.com/runZeroInc/excrypto v0.0.0-20241211193011-fc2f4abb22cd
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
@@ -31,7 +31,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/weppos/publicsuffix-go v0.40.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/exp v0.0.0-20241204233417-43b7b7cde48d // indirect
+	golang.org/x/exp v0.0.0-20241210194714-1829a127f884 // indirect
 	golang.org/x/net v0.32.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect

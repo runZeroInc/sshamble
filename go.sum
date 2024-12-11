@@ -55,6 +55,8 @@ github.com/runZeroInc/excrypto v0.0.0-20241206222946-256e7ab69d3b h1:DRMg/zqQuXr
 github.com/runZeroInc/excrypto v0.0.0-20241206222946-256e7ab69d3b/go.mod h1:ZUy4kTiOYkhRar1heQLG3jdmAG3iiA8O8IWc5d/2PG0=
 github.com/runZeroInc/excrypto v0.0.0-20241209025853-7f1d8e92b417 h1:xT5BE5D0Xth/AYdxXGV2qSQ/kkJoBjwC7TeTq0rtuyE=
 github.com/runZeroInc/excrypto v0.0.0-20241209025853-7f1d8e92b417/go.mod h1:GXoFbAWptR2Z5EcBiYwmpQ85+SGjEbgZNwreHqA59wk=
+github.com/runZeroInc/excrypto v0.0.0-20241211193011-fc2f4abb22cd h1:SHU0Ee+MzAfktOfGnZlRDfjsR6EzW6m1C38wGqr3AcI=
+github.com/runZeroInc/excrypto v0.0.0-20241211193011-fc2f4abb22cd/go.mod h1:Zohg50iiQyg9BgmVA3zbOb43z53N3VoTL3+3FqBk7b8=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/sagikazarmark/locafero v0.6.0 h1:ON7AQg37yzcRPU69mt7gwhFEBwxI6P9T4Qu3N51bwOk=
 github.com/sagikazarmark/locafero v0.6.0/go.mod h1:77OmuIc6VTraTXKXIs/uvUxKGUXjE1GbemJYHqdNjX0=
@@ -100,6 +102,8 @@ golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f h1:XdNn9LlyWAhLVp6P/i8QYBW+h
 golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f/go.mod h1:D5SMRVC3C2/4+F/DB1wZsLRnSNimn2Sp/NPsCrsv8ak=
 golang.org/x/exp v0.0.0-20241204233417-43b7b7cde48d h1:0olWaB5pg3+oychR51GUVCEsGkeCU/2JxjBgIo4f3M0=
 golang.org/x/exp v0.0.0-20241204233417-43b7b7cde48d/go.mod h1:qj5a5QZpwLU2NLQudwIN5koi3beDhSAlJwa67PuM98c=
+golang.org/x/exp v0.0.0-20241210194714-1829a127f884 h1:Y/Mj/94zIQQGHVSv1tTtQBDaQaJe62U9bkDZKKyhPCU=
+golang.org/x/exp v0.0.0-20241210194714-1829a127f884/go.mod h1:qj5a5QZpwLU2NLQudwIN5koi3beDhSAlJwa67PuM98c=
 golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4/go.mod h1:jJ57K6gSWd91VN4djpZkiMVwK6gcyfeH4XE8wZrZaV4=
 golang.org/x/mod v0.8.0/go.mod h1:iBbtSCu2XBx23ZKBPSOrRkjjQPZFPuis4dIYUhu/chs=
 golang.org/x/mod v0.12.0/go.mod h1:iBbtSCu2XBx23ZKBPSOrRkjjQPZFPuis4dIYUhu/chs=
