@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/base64"
 	"encoding/csv"
+	"encoding/hex"
 	"encoding/json"
 	"io"
 	"os"
@@ -301,11 +302,21 @@ func isBadKey(conf *ScanConfig, res *auth.AuthResult) bool {
 		if err != nil {
 			continue
 		}
-		res.AddVuln(auth.VulnResult{
-			ID:    "badkeys-" + bkr.RepoType + "-" + bkr.Repo + "-" + bkr.RepoPath + "-" + hkt,
-			Ref:   "https://badkeys.info/",
-			Proof: bkr.ToURL(),
-		})
+		if bkr.Private {
+			repStr := strconv.FormatUint(uint64(bkr.RepoID), 10)
+			hexPre := hex.EncodeToString(hpre)
+			res.AddVuln(auth.VulnResult{
+				ID:    "badkeys-private-" + repStr + "-" + hexPre,
+				Ref:   "https://badkeys.info/",
+				Proof: repStr + "-" + hexPre,
+			})
+		} else {
+			res.AddVuln(auth.VulnResult{
+				ID:    "badkeys-" + bkr.RepoType + "-" + bkr.Repo + "-" + bkr.RepoPath + "-" + hkt,
+				Ref:   "https://badkeys.info/",
+				Proof: bkr.ToURL(),
+			})
+		}
 		found++
 	}
 	return found != 0
