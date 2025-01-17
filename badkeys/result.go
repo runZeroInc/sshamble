@@ -9,6 +9,7 @@ type Result struct {
 	RepoPath string
 	RepoName string
 	KeyPath  string
+	Private  bool
 }
 
 func (r *Result) ToURL() string {

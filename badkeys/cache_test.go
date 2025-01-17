@@ -75,6 +75,21 @@ func TestCacheBasics(t *testing.T) {
 	if err == nil {
 		t.Fatalf("bad hash returned result: %v", res)
 	}
+
+	for i := range len(bl.Blocks) / 16 {
+		pre := bl.Blocks[(i * 16) : (i*16)+15]
+		res, err := bl.LookupPrefix(pre)
+		if err != nil {
+			t.Errorf("key %s returned error %v", hex.EncodeToString(pre), err)
+			continue
+		}
+		if res.Private {
+			continue
+		}
+		if res.Repo == "" || res.RepoID == 0 || res.RepoName == "" || res.RepoPath == "" || res.RepoType == "" {
+			t.Errorf("non-private key %s returned incomplete results %#v", hex.EncodeToString(pre), res)
+		}
+	}
 }
 
 // TestKeyDebOpenSSLRSA3072BE3229491 is the public key from https://github.com/badkeys/debianopenssl/blob/main/rsa3072/ssh/be32/29491.key

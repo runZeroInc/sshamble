@@ -72,11 +72,13 @@ func (tset *Blocklist) LookupPrefix(sum []byte) (*Result, error) {
 	}
 	repo, ok := tset.Repos[int(block[15])]
 	if !ok {
-		return nil, fmt.Errorf("repo %d is missing", block[15])
+		// No repo ID, likely private
+		return &Result{Private: true}, nil
 	}
 	info, ok := tset.LookupMap[binary.BigEndian.Uint64(block[:8])]
 	if !ok {
-		return nil, fmt.Errorf("lookup %x is missing", block[:8])
+		// No lookup key, likely private
+		return &Result{Private: true, RepoID: int8(repo.ID)}, nil
 	}
 	parts := make([]string, len(info))
 	for i, lk := range info {
