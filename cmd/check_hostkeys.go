@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"encoding/base64"
+	"encoding/hex"
+	"strconv"
 
 	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
@@ -37,13 +39,23 @@ func sshCheckBadKeysBlocklist(addr string, conf *ScanConfig, options *auth.Optio
 			continue
 		}
 
-		conf.Logger.Warnf("%s %s found compromised hostkey: %s", addr, tname, bkr.ToURL())
-
-		root.AddVuln(auth.VulnResult{
-			ID:    "badkeys-" + bkr.RepoType + "-" + bkr.Repo + "-" + bkr.RepoPath + "-" + hkt,
-			Ref:   "https://badkeys.info/",
-			Proof: bkr.ToURL(),
-		})
+		if bkr.Private {
+			repStr := strconv.FormatUint(uint64(bkr.RepoID), 10)
+			hexPre := hex.EncodeToString(hpre)
+			conf.Logger.Warnf("%s %s found compromised unpublished hostkey with repo %s and hash %s", addr, tname, repStr, hexPre)
+			root.AddVuln(auth.VulnResult{
+				ID:    "badkeys-private-" + repStr + "-" + hexPre,
+				Ref:   "https://badkeys.info/",
+				Proof: repStr + "-" + hexPre,
+			})
+		} else {
+			conf.Logger.Warnf("%s %s found compromised hostkey: %s", addr, tname, bkr.ToURL())
+			root.AddVuln(auth.VulnResult{
+				ID:    "badkeys-" + bkr.RepoType + "-" + bkr.Repo + "-" + bkr.RepoPath + "-" + hkt,
+				Ref:   "https://badkeys.info/",
+				Proof: bkr.ToURL(),
+			})
+		}
 	}
 
 	return nil
