@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/base64"
 	"encoding/csv"
-	"encoding/hex"
 	"encoding/json"
 	"io"
 	"os"
@@ -285,7 +284,7 @@ func isHoneypot(conf *ScanConfig, res *auth.AuthResult) bool {
 
 func isBadKey(conf *ScanConfig, res *auth.AuthResult) bool {
 	found := 0
-	for hkt, hkv := range res.HostKeys {
+	for _, hkv := range res.HostKeys {
 		raw, err := base64.StdEncoding.DecodeString(hkv)
 		if err != nil {
 			continue
@@ -303,18 +302,16 @@ func isBadKey(conf *ScanConfig, res *auth.AuthResult) bool {
 			continue
 		}
 		if bkr.Private {
-			repStr := strconv.FormatUint(uint64(bkr.RepoID), 10)
-			hexPre := hex.EncodeToString(hpre)
 			res.AddVuln(auth.VulnResult{
-				ID:    "badkeys-private-" + repStr + "-" + hexPre,
+				ID:    bkr.GetID(),
 				Ref:   "https://badkeys.info/",
-				Proof: repStr + "-" + hexPre,
+				Proof: bkr.GetURL(),
 			})
 		} else {
 			res.AddVuln(auth.VulnResult{
-				ID:    "badkeys-" + bkr.RepoType + "-" + bkr.Repo + "-" + bkr.RepoPath + "-" + hkt,
+				ID:    bkr.GetID(),
 				Ref:   "https://badkeys.info/",
-				Proof: bkr.ToURL(),
+				Proof: bkr.GetURL(),
 			})
 		}
 		found++

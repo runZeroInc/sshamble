@@ -65,7 +65,7 @@ func TestCacheBasics(t *testing.T) {
 		t.Errorf("unexpected result: %s", diff)
 	}
 	expURL := "https://github.com/badkeys/debianopenssl/blob/main/rsa3072/ssh/be32/29491.key"
-	resURL := res.ToURL()
+	resURL := res.GetURL()
 	if resURL != expURL {
 		t.Errorf("unexpected url %s got %s", expURL, resURL)
 	}

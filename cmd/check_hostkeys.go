@@ -21,7 +21,7 @@ func sshCheckBadKeysBlocklist(addr string, conf *ScanConfig, options *auth.Optio
 		return nil
 	}
 
-	for hkt, hkv := range root.HostKeys {
+	for _, hkv := range root.HostKeys {
 		raw, err := base64.StdEncoding.DecodeString(hkv)
 		if err != nil {
 			continue
@@ -44,16 +44,16 @@ func sshCheckBadKeysBlocklist(addr string, conf *ScanConfig, options *auth.Optio
 			hexPre := hex.EncodeToString(hpre)
 			conf.Logger.Warnf("%s %s found compromised unpublished hostkey with repo %s and hash %s", addr, tname, repStr, hexPre)
 			root.AddVuln(auth.VulnResult{
-				ID:    "badkeys-private-" + repStr + "-" + hexPre,
+				ID:    bkr.GetID(),
 				Ref:   "https://badkeys.info/",
 				Proof: repStr + "-" + hexPre,
 			})
 		} else {
-			conf.Logger.Warnf("%s %s found compromised hostkey: %s", addr, tname, bkr.ToURL())
+			conf.Logger.Warnf("%s %s found compromised hostkey: %s", addr, tname, bkr.GetURL())
 			root.AddVuln(auth.VulnResult{
-				ID:    "badkeys-" + bkr.RepoType + "-" + bkr.Repo + "-" + bkr.RepoPath + "-" + hkt,
+				ID:    bkr.GetID(),
 				Ref:   "https://badkeys.info/",
-				Proof: bkr.ToURL(),
+				Proof: bkr.GetURL(),
 			})
 		}
 	}
