@@ -3,7 +3,7 @@ module github.com/runZeroInc/sshamble
 go 1.23.2
 
 require (
-	github.com/google/go-cmp v0.6.0
+	github.com/google/go-cmp v0.7.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/mmcloughlin/professor v0.0.0-20170922221822-6b97112ab8b3
 	github.com/runZeroInc/excrypto v0.0.0-20250216211739-edde3eebead8
@@ -11,7 +11,7 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
 	github.com/ulikunitz/xz v0.5.12
-	golang.org/x/crypto v0.33.0
+	golang.org/x/crypto v0.34.0
 	golang.org/x/term v0.29.0
 	gonum.org/v1/gonum v0.15.1
 )
