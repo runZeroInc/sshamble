@@ -48,6 +48,8 @@ github.com/rogpeppe/go-internal v1.9.0 h1:73kH8U+JUqXU8lRuOHeVHaa/SZPifC7BkcraZV
 github.com/rogpeppe/go-internal v1.9.0/go.mod h1:WtVeX8xhTBvf0smdhujwtBcq4Qrzq/fJaraNFVN+nFs=
 github.com/runZeroInc/excrypto v0.0.0-20250224183710-87c74efb6dab h1:U7jYK4RSdz88u4uyzK7z3ETUQMryyW1pgf78S2w8tog=
 github.com/runZeroInc/excrypto v0.0.0-20250224183710-87c74efb6dab/go.mod h1:gHXVR76HZ0ZC/RYk8X3FFqAkSVwCJKPdokaWixTo9KE=
+github.com/runZeroInc/excrypto v0.0.0-20250306015343-44ce8af2485b h1:2p+2a9Fzu5Q9kzebb/zZBVXC+EFYi7OWi38mbuSxraY=
+github.com/runZeroInc/excrypto v0.0.0-20250306015343-44ce8af2485b/go.mod h1:gHXVR76HZ0ZC/RYk8X3FFqAkSVwCJKPdokaWixTo9KE=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/sagikazarmark/locafero v0.7.0 h1:5MqpDsTGNDhY8sGp0Aowyf0qKsPrhewaLSsFaodPcyo=
 github.com/sagikazarmark/locafero v0.7.0/go.mod h1:2za3Cg5rMaTMoG/2Ulr9AwtFaIppKXTRYnozin4aB5k=
