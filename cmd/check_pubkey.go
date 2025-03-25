@@ -129,7 +129,7 @@ func sshCheckPubKeyHunt(addr string, conf *ScanConfig, options *auth.Options, ro
 	}
 	defer hf.Close()
 
-	conf.Logger.Debugf("%s %s is running ", addr, tname)
+	conf.Logger.Debugf("%s %s is running", addr, tname)
 
 	stime := time.Now()
 	perSlice := int(gPubKeyHuntConnLimit)
