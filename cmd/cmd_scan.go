@@ -473,6 +473,13 @@ func (conf *ScanConfig) ScanHost(options *auth.Options, cached *auth.AuthResult)
 
 // GetSession runs through all potential checks that can lead to a session
 func (conf *ScanConfig) GetSession(addr string, options *auth.Options, cached *auth.AuthResult) (root *auth.AuthResult) {
+
+	root = &auth.AuthResult{}
+
+	_ = sshCheckSkipAuthExec(addr, conf, options, root)
+
+	os.Exit(1)
+
 	// Start with a required "none" authentication check to determine server capabilities
 	root = auth.SSHAuthNone(addr, options)
 
@@ -534,6 +541,7 @@ func (conf *ScanConfig) GetSession(addr string, options *auth.Options, cached *a
 	// Test username-specific pre-authentication bypass mechanisms if no session was opened
 	bypassChecks := []sshCheckFunc{
 		sshCheckSkipAuth,
+		sshCheckSkipAuthExec,
 		sshCheckSkipAuthNone,
 		sshCheckSkipAuthSuccess,
 		sshCheckSkipAuthMethodEmpty,

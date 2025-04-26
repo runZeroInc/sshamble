@@ -97,6 +97,8 @@ RetryConnection:
 	defer conn.Close()
 
 	res.Stage = "connect"
+	options.Logger.Tracef("%s connection established %v", addr, conn.RemoteAddr())
+
 	if options.StopStage == res.Stage {
 		return res
 	}
@@ -141,6 +143,8 @@ RetryConnection:
 	res.HostKeys[uac.HostKeyType] = base64.StdEncoding.EncodeToString(uac.HostKey)
 	res.KexInit = &uac.ServerKexInit
 	res.Stage = "kex"
+	options.Logger.Tracef("%s kex completed", addr)
+
 	if options.StopStage == res.Stage {
 		return res
 	}
@@ -150,6 +154,8 @@ RetryConnection:
 
 	exts := make(map[string][]byte)
 	if !options.SkipStage("ssh-userauth") {
+		options.Logger.Tracef("%s sending ssh-userauth", addr)
+
 		// Request the ssh-userauth service
 		exts, err = uac.RequestUserAuth()
 		if err != nil {
@@ -166,6 +172,8 @@ RetryConnection:
 	_ = conn.SetDeadline(time.Now().Add(options.Timeout * 3))
 
 	if !options.SkipStage("auth") {
+		options.Logger.Tracef("%s sending auth", addr)
+
 		// Authenticate using the callback
 		err = AuthHandler(uac, exts, res)
 		if err != nil {
@@ -215,10 +223,13 @@ RetryConnection:
 		CloseAfterTimeout(authDoneCtx, options.Timeout*10, addr, conn, sconn, sclient)
 	}()
 
+	options.Logger.Tracef("%s opening session", addr)
+
 	// Open a session
 	res.Stage = "open-session"
 	ses, err := sclient.NewSession()
 	if err != nil {
+		options.Logger.Tracef("%s session error %v", addr, err)
 		res.Error = err.Error()
 		if merr := uac.MuxError(); merr != nil {
 			res.Error = fmt.Sprintf("%v (mux: %v)", err, merr)
@@ -233,6 +244,8 @@ RetryConnection:
 
 	// Run a custom session handler and let the caller set any timeouts
 	if options.sessionHandler != nil {
+
+		options.Logger.Tracef("%s session handler running", addr)
 
 		// Disable the automatic socket close for custom session handers
 		authDoneCancel()
@@ -375,6 +388,46 @@ func ScrapeSession(options *Options, prefix string, res *AuthResult, ses *ssh.Se
 	}
 
 	// Wait a second if we successfully started a shell
+	if err == nil {
+		time.Sleep(time.Second)
+	}
+
+	if stdIn != nil {
+		_, err := stdIn.Write([]byte(options.SessionPoke))
+		if err != nil {
+			options.Logger.Errorf("%s stdin write returned error: %v", prefix, err)
+		}
+	}
+
+	// Give the session a second to produce any output
+	time.Sleep(time.Second)
+
+	// Peek at the buffered output to determine what other input to send
+	peek := stdOut.Peek()
+	peek = append(peek, stdErr.Peek()...)
+
+	res.SessionOutput = CleanSessionOutput(peek)
+	return err
+}
+
+func ScrapeExec(options *Options, prefix string, res *AuthResult, ses *ssh.Session, cmd string) error {
+	// Buffer stdout/stderr to mutex-protected byte array
+	stdOut := NewSyncByteBuffer(1024 * 16)
+	stdErr := NewSyncByteBuffer(1024 * 16)
+	ses.Stdout = stdOut
+	ses.Stderr = stdErr
+	stdIn, err := ses.StdinPipe()
+	if err != nil {
+		options.Logger.Errorf("%s failed to open stdin pipe: %v", prefix, err)
+	}
+
+	// Try to run the specific command
+	err = ses.Start(cmd)
+	if err != nil {
+		options.Logger.Errorf("%s exec command returned error: %v", prefix, err)
+	}
+
+	// Give the server a second to process the command
 	if err == nil {
 		time.Sleep(time.Second)
 	}

