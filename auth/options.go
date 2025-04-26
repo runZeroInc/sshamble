@@ -30,9 +30,10 @@ type Options struct {
 	Logger          *logrus.Logger
 	SessionPoke     string
 
-	skipStages      []string
-	sessionHandler  SessionHandler
-	postAuthHandler PostAuthHandler
+	skipStages             []string
+	sessionHandler         SessionHandler
+	postAuthHandler        PostAuthHandler
+	ignoreChannelOpenReply bool
 }
 
 func (o *Options) WithRetries(limit uint) *Options {
@@ -50,6 +51,12 @@ func (o *Options) WithStopStage(stage string) *Options {
 func (o *Options) WithSkipStages(stages ...string) *Options {
 	n := *o
 	n.skipStages = stages
+	return &n
+}
+
+func (o *Options) WithIgnoreChannelOpenReply(v bool) *Options {
+	n := *o
+	n.ignoreChannelOpenReply = v
 	return &n
 }
 

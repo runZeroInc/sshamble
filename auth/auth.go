@@ -201,7 +201,7 @@ RetryConnection:
 	}
 
 	// The server accepted our authentication
-	sconn, sshChans, sshReqs := uac.Mux()
+	sconn, sshChans, sshReqs := uac.Mux(options.ignoreChannelOpenReply)
 	defer sconn.Close()
 
 	// Use a multiple of the timeout for the session handler
@@ -247,7 +247,7 @@ RetryConnection:
 
 		options.Logger.Tracef("%s session handler running", addr)
 
-		// Disable the automatic socket close for custom session handers
+		// Disable the automatic socket close for custom session handlers
 		authDoneCancel()
 
 		// Disable the socket deadline

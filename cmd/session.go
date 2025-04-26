@@ -17,7 +17,7 @@ func sessionGetSTDIO(ses *ssh.Session) (*auth.SyncByteBuffer, *auth.SyncByteBuff
 }
 
 func initSessionChecks() {
-	// Register vulnerability checks
+	// Register session-based vulnerability checks
 	registerCheck(checkVulnGogsEnv, "vuln", true, true)
 	registerCheck(checkVulnRuckusPasswordEscape, "vuln", true, true)
 	registerCheck(checkVulnSoftServe, "vuln", true, true)

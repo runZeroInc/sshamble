@@ -54,6 +54,8 @@ var (
 	gLogfile                    string
 	gLogLevel                   string
 	gPProfPort                  string
+	gSkipVersions               string
+	gSkipVersionsRegex          *regexp.Regexp
 
 	interactMutex sync.Mutex
 )
@@ -132,6 +134,7 @@ func init() {
 	scanCmd.Flags().StringVarP(&gLogLevel, "log-level", "L", "info", "The log level to write (trace,debug,info,warn,error)")
 	scanCmd.Flags().StringVar(&gPProfPort, "pprof", "", "Start a Go pprof debug listener on the provided port")
 	scanCmd.Flags().UintVar(&gRetries, "retries", 2, "The retry count for subsequent failed connections after an initial success")
+	scanCmd.Flags().StringVar(&gSkipVersions, "skip-versions", "", "A regular expression of SSH versions to skip (ex: '(?i)openssh|dropbear)'")
 }
 
 var TestKeyRSASizes = []int{1024, 2048, 4096}
@@ -237,6 +240,13 @@ func runScan(cmd *cobra.Command, args []string) {
 
 	if (gInputTargets == "-" || gInputTargets == "stdin") && gInteract != "none" {
 		conf.Logger.Fatalf("unable to read targets from stdin while interact is enabled")
+	}
+
+	if gSkipVersions != "" {
+		gSkipVersionsRegex, err = regexp.Compile(gSkipVersions)
+		if err != nil {
+			conf.Logger.Fatalf("invalid skip-versions regex '%s': %v", gSkipVersions, err)
+		}
 	}
 
 	// Configure private key
@@ -476,10 +486,6 @@ func (conf *ScanConfig) GetSession(addr string, options *auth.Options, cached *a
 
 	root = &auth.AuthResult{}
 
-	_ = sshCheckSkipAuthExec(addr, conf, options, root)
-
-	os.Exit(1)
-
 	// Start with a required "none" authentication check to determine server capabilities
 	root = auth.SSHAuthNone(addr, options)
 
@@ -503,6 +509,12 @@ func (conf *ScanConfig) GetSession(addr string, options *auth.Options, cached *a
 
 	// Exit early if we obtained a session from 'none'
 	if root.SessionMethod != "" {
+		return
+	}
+
+	// Exit early if the version matches the skip regex
+	if gSkipVersionsRegex != nil && gSkipVersionsRegex.MatchString(root.Version) {
+		conf.Logger.Debugf("%s version %s matches skip-version pattern", addr, root.Version)
 		return
 	}
 
@@ -541,7 +553,6 @@ func (conf *ScanConfig) GetSession(addr string, options *auth.Options, cached *a
 	// Test username-specific pre-authentication bypass mechanisms if no session was opened
 	bypassChecks := []sshCheckFunc{
 		sshCheckSkipAuth,
-		sshCheckSkipAuthExec,
 		sshCheckSkipAuthNone,
 		sshCheckSkipAuthSuccess,
 		sshCheckSkipAuthMethodEmpty,
@@ -665,6 +676,14 @@ func (conf *ScanConfig) GetSession(addr string, options *auth.Options, cached *a
 		}
 	}
 
+	// Process pre-session vulnerability checks
+	vulnChecks := []sshCheckFunc{
+		sshCheckVulnExecSkipUserAuth,
+		sshCheckVulnExecSkipAuth,
+	}
+	for _, check := range vulnChecks {
+		_ = check(addr, conf, options, root)
+	}
 	return
 }
 
