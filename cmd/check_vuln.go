@@ -2,6 +2,8 @@ package cmd
 
 func initVulnChecks() {
 	// Register pre-session vulnerability checks
-	registerCheck(checkVulnExecSkipUserAuth, "vuln", false, true)
-	registerCheck(checkVulnExecSkipAuth, "vuln", false, true)
+
+	// Disabled by default due to false positives today
+	registerCheck(checkVulnExecSkipUserAuth, "vuln", false, false)
+	registerCheck(checkVulnExecSkipAuth, "vuln", false, false)
 }

@@ -64,7 +64,7 @@ func sshCheckVulnExecHelper(tname string, addr string, conf *ScanConfig, options
 			proof = "timeout reached"
 		}
 		root.AddVuln(auth.VulnResult{
-			ID:    checkVulnGenericEnv,
+			ID:    tname,
 			Ref:   "https://www.openwall.com/lists/oss-security/2025/04/16/2",
 			Proof: fmt.Sprintf("exec may have been processed: %s (skipped stages: %v)", proof, strings.Join(skipStages, ",")),
 		})
@@ -93,6 +93,5 @@ func sshCheckVulnExecHelper(tname string, addr string, conf *ScanConfig, options
 	*/
 
 	// Note: For Erlang-SSHD, the payload `ssh:stop().` kills the service
-
 	return nil
 }
