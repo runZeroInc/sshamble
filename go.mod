@@ -2,8 +2,6 @@ module github.com/runZeroInc/sshamble
 
 go 1.24.2
 
-replace github.com/runZeroInc/excrypto => ../excrypto
-
 require (
 	github.com/google/go-cmp v0.7.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
