@@ -11,8 +11,8 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
 	github.com/ulikunitz/xz v0.5.12
-	golang.org/x/crypto v0.37.0
-	golang.org/x/term v0.31.0
+	golang.org/x/crypto v0.39.0
+	golang.org/x/term v0.32.0
 	gonum.org/v1/gonum v0.16.0
 )
 
@@ -30,7 +30,7 @@ require (
 	github.com/weppos/publicsuffix-go v0.40.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/net v0.39.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
-	golang.org/x/text v0.24.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/text v0.26.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
