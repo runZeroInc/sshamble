@@ -172,14 +172,11 @@ func (conf *ScanConfig) AnalyzeResult(res *auth.AuthResult, stats *AnalysisStats
 		return nil
 	}
 
-	if isHoneypot(conf, res) {
-		conf.writeAnalysisRecord("honeypots", res)
-	}
-
 	if conf.BadKeyCache != nil && isBadKey(conf, res) {
 		conf.writeAnalysisRecord("badkeys", res)
 	}
 
+	// Only write a single record for each session
 	if name := isKnownDevice(conf, res); name != "" {
 		conf.writeAnalysisRecord("session_known_"+name, res)
 	} else if res.SessionMethod != "" {
@@ -268,9 +265,19 @@ func (conf *ScanConfig) writeAnalysisStats(stats *AnalysisStats, name string, va
 	fd.Close()
 }
 
+// Simple honeypot detection using common strings
+// TODO: Replace these with regexes or heuristics
+// TODO: Keep track of whether the kex init is sent before the client version since this is an obvious tell for fake OpenSSH.
 var commonHoneypotStrings = []string{
 	"The programs included with the Debian GNU/Linux system are free software;",
+	"ABSOLUTELY NO WARRANTY",
 	"Welcome to Ubuntu",
+	"microsoft-standard-WSL2",
+	"ost ~]$",
+	"ost tmp]$",
+	" ~tmp]$",
+	" /tmp]$",
+	"HONEYPOT",
 }
 
 func isHoneypot(conf *ScanConfig, res *auth.AuthResult) bool {
@@ -320,7 +327,9 @@ func isBadKey(conf *ScanConfig, res *auth.AuthResult) bool {
 }
 
 var commonDeviceStrings = map[string]string{
-	"sonicwall":    "SonicWall",
+	"sonicwall1":   "SonicWall",
+	"sonicwall2":   "SonicWALL",
+	"sonicwall3":   "Sonicwall",
 	"atos":         "ATOSNT Remote CLI", // No password
 	"yamaha-rtx":   "Error: Login access is restricted",
 	"dlink":        "D-Link Corporation",
@@ -334,21 +343,36 @@ var commonDeviceStrings = map[string]string{
 	"lancom":       "Connection No.:",
 	"realpresence": "Here is what I know about myself",
 	"mikrotik":     "MikroTik RouterOS",
-	"exceed":       "exceeds the specificaitons",
+	"exceed":       "exceeds the specificaitons", // Typo intentional
 	"hpswitch":     "HEWLETT-PACKARD COMPANY, 3000 Hanover St",
 	"gitee":        "GITEE.COM does not provide shell access",
 	"tl1":          "Starting Interactive TL1",
 	"sshs":         "SSHS>",
 	"keenetic":     "https://keenetic",
 	"vstfs2":       "Your Git command did not succeed",
+	"vstfs3":       "remote: Shell access is not supported",
 	"cellrtr":      "Cellular Router>",
 	"ruckus":       "Please login: \r\nPlease login",
 	"snips.sh":     "snips.sh",
 	"mioffice_mfa": "https://xiaomi.f.mioffice.cn",
 	"l2switch":     "Welcome to Layer 2 Managed Switch",
+	"listensocks":  "listensocks",
+	"axgate":       "AxGate",
+	"gitops":       "This port is reserved for git operations",
+	"segfault":     "segfault",
+	"telnet":       "Escape character is",
+	"busybox":      "built-in shell",
+	"juniper":      "Juniper Networks, Inc. All rights reserved.\r\n\n\r\n\r\n\rUsername: \n\rPassword:",
+	"snips":        "snips.sh",
+	"syncronet":    "Synchronet BBS",
+	"netconf":      "<capability>urn:ietf:params:",
+	"abilis":       "Abilis CPX",
 }
 
 func isKnownDevice(conf *ScanConfig, res *auth.AuthResult) string {
+	if isHoneypot(conf, res) {
+		return "honeypots"
+	}
 	for k, v := range commonDeviceStrings {
 		if strings.Contains(strings.ToLower(res.SessionOutput), strings.ToLower(v)) {
 			return k
