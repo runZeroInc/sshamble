@@ -23,7 +23,7 @@ import (
 
 // scanCmd handles scanning
 var scanCmd = &cobra.Command{
-	Use:   "scan [-p 22] [-u root,admin] [-o scan.json] [-l scan.log] [--log-level trace] 192.168.0.0/24 ...",
+	Use:   "scan [-p 22] [-u root,admin] [-o scan.jsonl] [-l scan.log] [--log-level trace] 192.168.0.0/24 ...",
 	Short: "Enumerates a set of targets for SSH capabilities and exposures",
 	Long:  "Enumerates a set of targets for SSH capabilities and exposures",
 	Run:   runScan,

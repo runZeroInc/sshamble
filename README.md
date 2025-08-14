@@ -71,11 +71,11 @@ An exploration tool for (in)secure shell services.
 
 Start a network scan using:
 
-$ ./sshamble scan -o results.json 192.168.0.0/24
+$ ./sshamble scan -o results.jsonl 192.168.0.0/24
 
 Analyze the results using:
 
-$ ./sshamble analyze -o results-directory results.json
+$ ./sshamble analyze -o results-directory results.jsonl
 
 Usage:
   sshamble [command]
@@ -98,8 +98,9 @@ Use "sshamble [command] --help" for more information about a command.
 $ ./sshamble scan -h
 
 Enumerates a set of targets for SSH capabilities and exposures
+
 Usage:
-  sshamble scan [-p 22] [-u root,admin] [-o scan.json] [-l scan.log] [--log-level trace] 192.168.0.0/24 ... [flags]
+  sshamble scan [-p 22] [-u root,admin] [-o scan.jsonl] [-l scan.log] [--log-level trace] 192.168.0.0/24 ... [flags]
 
 Flags:
       --categories string                     The list of categories to include. (default "bypass,gssapi,hostkey,keyboard,password,pubkey,userenum,vuln")
@@ -129,4 +130,3 @@ Flags:
       --userenum-max-per-session-count uint   The maximum number of authentication atempts per session (default 1023)
       --userenum-test-count uint              The number of tests to apply during username enumeration (default 2500)
   -u, --users string                          The list of usernames to test on each target (comma-separated) (default "root")
-```

@@ -21,9 +21,9 @@ import (
 
 // analyzeCmd processes a scan output file and buckets results
 var analyzeCmd = &cobra.Command{
-	Use:   "analyze -o results-directory scan.json ...",
-	Short: "Analyzes a scan JSON output file and buckets results",
-	Long:  "Analyzes a scan JSON output file and buckets results",
+	Use:   "analyze -o results-directory scan.jsonl ...",
+	Short: "Analyzes a scan JSONL output file and buckets results",
+	Long:  "Analyzes a scan JSONL output file and buckets results",
 	Run:   runAnalyze,
 }
 
@@ -220,7 +220,7 @@ func (conf *ScanConfig) AnalyzeResult(res *auth.AuthResult, stats *AnalysisStats
 }
 
 func (conf *ScanConfig) writeAnalysisRecord(name string, res *auth.AuthResult) {
-	fd, err := os.OpenFile(filepath.Join(gOutput, filepath.Base(name)+".json"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o600)
+	fd, err := os.OpenFile(filepath.Join(gOutput, filepath.Base(name)+".jsonl"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o600)
 	if err != nil {
 		conf.Logger.Fatalf("failed to write file %s: %v", name, err)
 	}

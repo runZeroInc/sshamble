@@ -21,7 +21,7 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "sshamble {scan -o results.json 192.168.0.0/24, analyze results.json -d results-dir}",
+	Use:   "sshamble {scan -o results.jsonl 192.168.0.0/24, analyze results.jsonl -d results-dir}",
 	Short: "An exploration tool for (in)secure shell services",
 	Long: `
 
@@ -41,11 +41,11 @@ An exploration tool for (in)secure shell services.
 
 Start a network scan using:
 
-$ sshamble scan -o results.json 192.168.0.0/24
+$ sshamble scan -o results.jsonl 192.168.0.0/24
 
 Analyze the results using:
 
-$ sshamble analyze -o results-directory results.json
+$ sshamble analyze -o results-directory results.jsonl
 
 `,
 }

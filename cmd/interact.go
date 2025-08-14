@@ -314,7 +314,7 @@ func (conf *ScanConfig) InteractHandler(addr string, options *auth.Options, root
 			if cmd == "" {
 				continue
 			}
-			fmt.Printf(" sshamble> " + cmd + "\r\n")
+			fmt.Printf(" sshamble> %s\r\n", cmd)
 			spawned, err := conf.InteractCommand(addr, []byte(cmd), ses, sclient, state, sesInput)
 			if err != nil {
 				conf.Logger.Errorf("%s command '%s' returned error: %v", addr, cmd, err)
