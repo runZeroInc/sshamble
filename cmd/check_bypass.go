@@ -203,7 +203,7 @@ func sshCheckSkipAuthMethodNull(addr string, conf *ScanConfig, options *auth.Opt
 
 	res := auth.SSHAuth(addr, options.WithIgnoreAuthError(), auth.SSHAuthHandlerSingle(customAuth))
 	if bypassAtInterestingStage(tname, addr, conf, res) {
-		conf.Logger.Warnf("%s %s provided a session with empty auth method '%s': %s", addr, tname, res.Stage, res.SessionOutput)
+		conf.Logger.Warnf("%s %s provided a session with NULL auth method '%s': %s", addr, tname, res.Stage, res.SessionOutput)
 		res.SessionMethod = tname
 		root.SessionMethod = tname
 		root.SessionOutput = res.SessionOutput

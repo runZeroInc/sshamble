@@ -56,6 +56,8 @@ var (
 	gPProfPort                  string
 	gSkipVersions               string
 	gSkipVersionsRegex          *regexp.Regexp
+	gOneSessionOnly             bool
+	gSessionPoke                string
 
 	interactMutex sync.Mutex
 )
@@ -135,6 +137,9 @@ func init() {
 	scanCmd.Flags().StringVar(&gPProfPort, "pprof", "", "Start a Go pprof debug listener on the provided port")
 	scanCmd.Flags().UintVar(&gRetries, "retries", 2, "The retry count for subsequent failed connections after an initial success")
 	scanCmd.Flags().StringVar(&gSkipVersions, "skip-versions", "", "A regular expression of SSH versions to skip (ex: '(?i)openssh|dropbear)'")
+	scanCmd.Flags().BoolVar(&gOneSessionOnly, "one-session-only", false, "Only open one session per target")
+	scanCmd.Flags().StringVar(&gSessionPoke, "session-poke", "\\x0a\\x0d\\r\\n", "A byte sequence sent to sessions to elicit further responses (hex or ascii)")
+
 }
 
 var TestKeyRSASizes = []int{1024, 2048, 4096}
@@ -352,7 +357,7 @@ func runScan(cmd *cobra.Command, args []string) {
 					Timeout:       time.Second * time.Duration(gTimeout),
 					Logger:        conf.Logger,
 					ClientVersion: gClientVersion,
-					SessionPoke:   "\r\n\r\n",
+					SessionPoke:   string(processEscapedByteString(gSessionPoke)),
 				}
 			}
 
@@ -395,7 +400,7 @@ func runScan(cmd *cobra.Command, args []string) {
 	// Start the stdin manager if interaction was requested
 	if gInteract != "none" && gInteract != "" {
 		conf.Logger.Debugf("interaction enabled, starting stdin manager...")
-		gStdinManager = NewStdinManager()
+		NewStdinManager()
 	}
 
 	// Add on any command-line targets
@@ -484,8 +489,6 @@ func (conf *ScanConfig) ScanHost(options *auth.Options, cached *auth.AuthResult)
 // GetSession runs through all potential checks that can lead to a session
 func (conf *ScanConfig) GetSession(addr string, options *auth.Options, cached *auth.AuthResult) (root *auth.AuthResult) {
 
-	root = &auth.AuthResult{}
-
 	// Start with a required "none" authentication check to determine server capabilities
 	root = auth.SSHAuthNone(addr, options)
 
@@ -529,12 +532,21 @@ func (conf *ScanConfig) GetSession(addr string, options *auth.Options, cached *a
 	}
 
 	shouldReturn := func() bool {
+
+		// Service is no longer available, stop trying
 		if res != nil && res.Unreachable {
 			conf.Logger.Errorf("%s failed to reconnect: %v", addr, res.Error)
 			return true
 		}
+
+		// Interact on the first session (skipping additional checks)
 		if gInteract == "first" && root.SessionMethod != "" {
 			conf.Logger.Warnf("%s returned a session, interacting via %s", addr, root.SessionMethod)
+			return true
+		}
+
+		// Break on the first session for this target
+		if gOneSessionOnly && root.SessionMethod != "" {
 			return true
 		}
 		return false

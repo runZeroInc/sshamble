@@ -1,6 +1,6 @@
 module github.com/runZeroInc/sshamble
 
-go 1.24.2
+go 1.24
 
 require (
 	github.com/google/go-cmp v0.7.0

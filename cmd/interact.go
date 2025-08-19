@@ -68,6 +68,7 @@ func (conf *ScanConfig) StartInteract(addr string, options *auth.Options, root *
 }
 
 var gStdinManager *stdinManager
+var gStdinManagerM sync.Mutex
 
 type stdinManager struct {
 	sync.Mutex
@@ -76,11 +77,22 @@ type stdinManager struct {
 	rawMode  bool
 }
 
-func NewStdinManager() *stdinManager {
+func GetStdinManager() *stdinManager {
+	gStdinManagerM.Lock()
+	defer gStdinManagerM.Unlock()
+	return gStdinManager
+}
+
+func NewStdinManager() {
+	gStdinManagerM.Lock()
+	defer gStdinManagerM.Unlock()
+	if gStdinManager != nil {
+		return
+	}
 	m := &stdinManager{
 		output: nil,
 	}
-	return m
+	gStdinManager = m
 }
 
 func (m *stdinManager) CleanTerminal() {
@@ -277,7 +289,12 @@ func (conf *ScanConfig) InteractHandler(addr string, options *auth.Options, root
 			return fmt.Errorf("interact mode requires a controlling terminal")
 		}
 
-		go gStdinManager.Relay(conf, intDoneCtx)
+		m := GetStdinManager()
+		if m == nil {
+			return fmt.Errorf("failed to get stdin manager")
+		}
+
+		go m.Relay(conf, intDoneCtx)
 
 		state := &interactSessionState{}
 
@@ -298,10 +315,10 @@ func (conf *ScanConfig) InteractHandler(addr string, options *auth.Options, root
 		}()
 
 		// Make sure our terminal is in raw mode
-		if !gStdinManager.IsRawMode() {
-			gStdinManager.SetRawTerminalMode()
-		}
-		defer gStdinManager.RestoreTerminalMode()
+		m.SetRawTerminalMode()
+
+		// Restore the terminal mode after completion
+		defer m.RestoreTerminalMode()
 
 		// Close the ssh.Client first (last defer) to avoid deadlocks
 		defer sclient.Close()
@@ -356,7 +373,6 @@ func (conf *ScanConfig) InteractHandler(addr string, options *auth.Options, root
 			sclient.Close()
 			sesInput.Close()
 		}
-		gStdinManager.RestoreTerminalMode()
 		return nil
 	}
 }
@@ -380,18 +396,21 @@ func (conf *ScanConfig) InteractShowHelp(addr string) {
 	fmt.Printf("    send     string            - Send string to the session\r\n")
 	fmt.Printf("    sendb    string            - Send string to the session one byte at a time\r\n")
 	fmt.Printf("    wait     cmd arg1 arg2     - Send another command and wait for a reply\r\n")
+	fmt.Printf("    sleep    duration          - Sleep for the specified duration (1s, 100ms)\r\n")
 	fmt.Printf("\r\n\r\n")
 }
 
 func (conf *ScanConfig) InteractRelay(addr string, quit chan bool, shell io.WriteCloser, sclient *ssh.Client, ses *ssh.Session, state *interactSessionState) {
 	input := make(chan []byte, 1)
-	gStdinManager.SetOutput(input)
+
+	m := GetStdinManager()
+	m.SetOutput(input)
 
 	defer func() {
 		if r := recover(); r != nil {
 			conf.Logger.Errorf("panic: interact relay: %v", r)
 		}
-		gStdinManager.SetOutput(nil)
+		m.SetOutput(nil)
 		sclient.Close()
 	}()
 
@@ -558,11 +577,11 @@ func (conf *ScanConfig) InteractCommand(addr string, data []byte, ses *ssh.Sessi
 
 	case "send":
 		data := strings.Join(args[1:], " ")
-		_, err := shell.Write(processSendBytes(data))
+		_, err := shell.Write(processEscapedByteString(data))
 		return false, err
 
 	case "sendb":
-		data := processSendBytes(strings.Join(args[1:], " "))
+		data := processEscapedByteString(strings.Join(args[1:], " "))
 		for i := 0; i < len(data); i++ {
 			_, err := shell.Write(data[i : i+1])
 			if err != nil {
@@ -679,6 +698,16 @@ func (conf *ScanConfig) InteractCommand(addr string, data []byte, ses *ssh.Sessi
 			c.Close()
 		}()
 		return false, nil
+	case "sleep":
+		if len(args) < 2 {
+			return false, fmt.Errorf("missing sleep duration")
+		}
+		duration, err := time.ParseDuration(args[1])
+		if err != nil {
+			return false, fmt.Errorf("invalid sleep duration: %v", err)
+		}
+		time.Sleep(duration)
+		return false, nil
 	}
 
 	return false, fmt.Errorf("unknown command: %s", strings.Join(args, " "))
@@ -686,7 +715,7 @@ func (conf *ScanConfig) InteractCommand(addr string, data []byte, ses *ssh.Sessi
 
 var patReplaceHexEscape = regexp.MustCompile(`(\\x[a-fA-F0-9]{2}|\\[rnt])`)
 
-func processSendBytes(s string) []byte {
+func processEscapedByteString(s string) []byte {
 	s = patReplaceHexEscape.ReplaceAllStringFunc(s, func(h string) string {
 		if len(h) == 4 {
 			b, _ := hex.DecodeString(h[2:])

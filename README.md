@@ -20,7 +20,7 @@ https://SSHamble.com/
 Binaries are available from the [releases page](https://github.com/runZeroInc/sshamble/releases).
 
 
-To build SSHamble from source, ensure that you have a recent version of Go (1.22.6+) installed.
+To build SSHamble from source, ensure that you have a recent version of Go (1.24+) installed.
 
 You can use Go to install a binary into the `bin` directory in your GOPATH.
 
@@ -96,7 +96,6 @@ Use "sshamble [command] --help" for more information about a command.
 
 ```console
 $ ./sshamble scan -h
-
 Enumerates a set of targets for SSH capabilities and exposures
 
 Usage:
@@ -114,6 +113,7 @@ Flags:
   -l, --log string                            The file to write logs to (default is stderr) (default "-")
   -L, --log-level string                      The log level to write (trace,debug,info,warn,error) (default "info")
   -m, --max-connections uint                  The maximum number of concurrent connections (default 5000)
+      --one-session-only                      Only open one session per target
   -o, --output string                         The destination file for JSON output (default "stdout")
       --password string                       An optional password to try for authentication
       --password-file string                  An optional file with clear-text passwords to try for authentication
@@ -125,8 +125,10 @@ Flags:
       --pubkey-hunt-conn-limit uint           The number of public keys to test in each connection (default 250000)
       --pubkey-hunt-file string               The optional file containing public keys to hunt
       --retries uint                          The retry count for subsequent failed connections after an initial success (default 2)
+      --session-poke string                   A byte sequence sent to sessions to elicit further responses (hex or ascii) (default "\\x0a\\x0d\\r\\n")
       --skip-versions string                  A regular expression of SSH versions to skip (ex: '(?i)openssh|dropbear)'
       --timeout uint                          The number of seconds to wait for a target to respond (default 5)
       --userenum-max-per-session-count uint   The maximum number of authentication atempts per session (default 1023)
       --userenum-test-count uint              The number of tests to apply during username enumeration (default 2500)
   -u, --users string                          The list of usernames to test on each target (comma-separated) (default "root")
+```

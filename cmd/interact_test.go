@@ -19,7 +19,7 @@ func TestProcessSend(t *testing.T) {
 		{"\\r\\nABC\\tDEFG", []byte("\r\nABC\tDEFG")},
 	}
 	for _, tc := range testCases {
-		got := processSendBytes(tc.Input)
+		got := processEscapedByteString(tc.Input)
 		if !bytes.Equal(tc.Expected, got) {
 			t.Errorf("got %s for %s, expected %s", hex.EncodeToString(got), tc.Input, hex.EncodeToString(tc.Expected))
 		}

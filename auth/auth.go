@@ -295,33 +295,43 @@ RetryConnection:
 		time.Sleep(time.Second)
 	}
 
+	// Prod the session for more output if stdin is enabled
 	if stdIn != nil {
 		// Send input likely to trigger useful replies:
 		_, err := stdIn.Write([]byte(options.SessionPoke))
 		if err != nil {
 			options.Logger.Errorf("%s stdin write returned error: %v", addr, err)
 		}
-	}
 
-	// Give the session a second to produce any output
-	time.Sleep(time.Second)
+		// Give the session a second to produce any output
+		time.Sleep(time.Second)
 
-	// Peek at the buffered output to determine what other input to send
-	peek := stdOut.Peek()
-	peek = append(peek, stdErr.Peek()...)
+		// Peek at the buffered output to determine what other input to send
+		peek := stdOut.Peek()
+		peek = append(peek, stdErr.Peek()...)
 
-	// Poke telnet-in-ssh specifically by trying to use the shell escape
-	if bytes.Contains(peek, []byte("Escape character is")) && stdIn != nil {
-		_, err := stdIn.Write([]byte("\x1d!id||uname||sh\r\n"))
-		if err != nil {
-			options.Logger.Errorf("%s stdin write returned error: %v", addr, err)
-		} else {
-			time.Sleep(time.Second)
+		lcVersion := strings.ToLower(res.Version)
+
+		// Poke telnet-in-ssh specifically by trying to use the shell escape
+		if bytes.Contains(peek, []byte("scape character is")) {
+			_, err := stdIn.Write([]byte("\x1d!id||uname||sh\r\n"))
+			if err != nil {
+				options.Logger.Errorf("%s stdin write returned error: %v", addr, err)
+			} else {
+				time.Sleep(time.Second)
+			}
 		}
-	}
 
-	// Close stdin
-	if stdIn != nil {
+		// Poke various network devices with "show version\r\n" to get better proof data
+		if strings.Contains(lcVersion, "cisco") || strings.Contains(lcVersion, "raisecom") {
+			_, err := stdIn.Write([]byte("show version\r\n"))
+			if err != nil {
+				options.Logger.Errorf("%s stdin write returned error: %v", addr, err)
+			} else {
+				time.Sleep(time.Second)
+			}
+		}
+
 		stdIn.Close()
 	}
 

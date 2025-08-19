@@ -365,7 +365,7 @@ var commonDeviceStrings = map[string]string{
 	"juniper":      "Juniper Networks, Inc. All rights reserved.\r\n\n\r\n\r\n\rUsername: \n\rPassword:",
 	"snips":        "snips.sh",
 	"syncronet":    "Synchronet BBS",
-	"netconf":      "<capability>urn:ietf:params:",
+	"raisecom":     "<capability>urn:ietf:params:",
 	"abilis":       "Abilis CPX",
 }
 

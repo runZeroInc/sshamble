@@ -118,7 +118,7 @@ func (hook *TerminalModeHook) Fire(entry *logrus.Entry) error {
 		return err
 	}
 	line = bytes.ReplaceAll(line, []byte{0x00}, []byte{})
-	if gStdinManager != nil && gStdinManager.IsRawMode() {
+	if m := GetStdinManager(); m != nil && !m.IsRawMode() {
 		// Use CRLF for raw mode and don't filter escapes
 		line = append([]byte{'\r', '\n'}, bytes.TrimSpace(line)...)
 		line = append(line, '\r', '\n')
