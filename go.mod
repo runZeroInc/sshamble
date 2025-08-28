@@ -10,7 +10,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
-	github.com/ulikunitz/xz v0.5.13
+	github.com/ulikunitz/xz v0.5.14
 	golang.org/x/crypto v0.41.0
 	golang.org/x/term v0.34.0
 	gonum.org/v1/gonum v0.16.0
