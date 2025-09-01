@@ -8,9 +8,9 @@ require (
 	github.com/mmcloughlin/professor v0.0.0-20170922221822-6b97112ab8b3
 	github.com/runZeroInc/excrypto v0.0.0-20250629231451-7e62a70a4cc3
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cobra v1.9.1
+	github.com/spf13/cobra v1.10.0
 	github.com/spf13/viper v1.20.1
-	github.com/ulikunitz/xz v0.5.13
+	github.com/ulikunitz/xz v0.5.15
 	golang.org/x/crypto v0.41.0
 	golang.org/x/term v0.34.0
 	gonum.org/v1/gonum v0.16.0
@@ -25,7 +25,7 @@ require (
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
 	github.com/spf13/afero v1.14.0 // indirect
 	github.com/spf13/cast v1.9.2 // indirect
-	github.com/spf13/pflag v1.0.7 // indirect
+	github.com/spf13/pflag v1.0.8 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/weppos/publicsuffix-go v0.40.2 // indirect
 	golang.org/x/net v0.43.0 // indirect
