@@ -6,13 +6,13 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/mmcloughlin/professor v0.0.0-20170922221822-6b97112ab8b3
-	github.com/runZeroInc/excrypto v0.0.0-20250629231451-7e62a70a4cc3
+	github.com/runZeroInc/excrypto v0.0.0-20250915161713-c96731c6f7b4
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.21.0
 	github.com/ulikunitz/xz v0.5.15
-	golang.org/x/crypto v0.42.0
-	golang.org/x/term v0.35.0
+	golang.org/x/crypto v0.43.0
+	golang.org/x/term v0.36.0
 	gonum.org/v1/gonum v0.16.0
 )
 
@@ -21,15 +21,15 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
-	github.com/sagikazarmark/locafero v0.11.0 // indirect
+	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	github.com/weppos/publicsuffix-go v0.40.2 // indirect
+	github.com/weppos/publicsuffix-go v0.50.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/net v0.43.0 // indirect
-	golang.org/x/sys v0.36.0 // indirect
-	golang.org/x/text v0.29.0 // indirect
+	golang.org/x/net v0.46.0 // indirect
+	golang.org/x/sys v0.37.0 // indirect
+	golang.org/x/text v0.30.0 // indirect
 )
