@@ -44,6 +44,8 @@ github.com/runZeroInc/excrypto v0.0.0-20250629231451-7e62a70a4cc3 h1:nHWx/OmoqfY
 github.com/runZeroInc/excrypto v0.0.0-20250629231451-7e62a70a4cc3/go.mod h1:Kk/CHQ2eYnHRYmR1eT1mA6L8LbNXA10fg8m8CqF6s2E=
 github.com/runZeroInc/excrypto v0.0.0-20250915161713-c96731c6f7b4 h1:AM202u0RJ09sD/6zGkMQuJK0mGAXBTzs/ERq+ln3Yu8=
 github.com/runZeroInc/excrypto v0.0.0-20250915161713-c96731c6f7b4/go.mod h1:D9vJh2x7Q/umzQHSlT3fzAkNaVvQgJrJP96zV7gXmJU=
+github.com/runZeroInc/excrypto v0.0.0-20251021162936-5c2b17fc0596 h1:SOi6MlYKBzzvRCRNFU4Ys1EeYEwNdd2CyB+mM7Lc0Ks=
+github.com/runZeroInc/excrypto v0.0.0-20251021162936-5c2b17fc0596/go.mod h1:D9vJh2x7Q/umzQHSlT3fzAkNaVvQgJrJP96zV7gXmJU=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/sagikazarmark/locafero v0.11.0 h1:1iurJgmM9G3PA/I+wWYIOw/5SyBtxapeHDcg+AAIFXc=
 github.com/sagikazarmark/locafero v0.11.0/go.mod h1:nVIGvgyzw595SUSUE6tvCp3YYTeHs15MvlmU87WwIik=
