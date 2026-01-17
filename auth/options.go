@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net"
+	"slices"
 	"time"
 	"unicode/utf8"
 
@@ -115,12 +116,7 @@ func (o *Options) WithPostAuthHandler(handler PostAuthHandler) *Options {
 }
 
 func (o *Options) SkipStage(stage string) bool {
-	for _, skipStage := range o.skipStages {
-		if stage == skipStage {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(o.skipStages, stage)
 }
 
 func ReverseString(s string) string {

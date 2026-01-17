@@ -45,7 +45,6 @@ func sshCheckPubKeyAny(addr string, conf *ScanConfig, options *auth.Options, roo
 
 	cnt := 0
 	for _, tk := range testHalfKeys {
-		tk := tk
 		kt := tk.PublicKey().Type()
 		cnt++
 		res := auth.SSHAuth(addr, options.WithStopStage("auth"), auth.SSHAuthHandlerSingle(ssh.AuthMethod(
@@ -81,7 +80,6 @@ func sshCheckPubKeyAny(addr string, conf *ScanConfig, options *auth.Options, roo
 	// Test to see if any full key is accepted
 	cnt = 0
 	for _, tk := range testKeys {
-		tk := tk
 		if _, ok := pubAccepted[base64.StdEncoding.EncodeToString(tk.PublicKey().Marshal())]; !ok {
 			// Skip full key tests where the half key was not accepted
 			continue

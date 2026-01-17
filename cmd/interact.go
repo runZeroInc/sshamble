@@ -326,7 +326,7 @@ func (conf *ScanConfig) InteractHandler(addr string, options *auth.Options, root
 		// Start piping our raw-mode stdin manager
 		go conf.InteractRelay(addr, quit, sesInput, sclient, ses, state)
 
-		for _, cmd := range strings.Split(gInteractAuto, ",") {
+		for cmd := range strings.SplitSeq(gInteractAuto, ",") {
 			cmd = strings.TrimSpace(cmd)
 			if cmd == "" {
 				continue
@@ -582,7 +582,7 @@ func (conf *ScanConfig) InteractCommand(addr string, data []byte, ses *ssh.Sessi
 
 	case "sendb":
 		data := processEscapedByteString(strings.Join(args[1:], " "))
-		for i := 0; i < len(data); i++ {
+		for i := range data {
 			_, err := shell.Write(data[i : i+1])
 			if err != nil {
 				return false, err

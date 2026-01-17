@@ -11,7 +11,7 @@ import (
 
 func parseTargets(input string) ([]string, error) {
 	res := []string{}
-	for _, target := range strings.Fields(strings.ReplaceAll(input, ",", " ")) {
+	for target := range strings.FieldsSeq(strings.ReplaceAll(input, ",", " ")) {
 		target = strings.ToLower(strings.TrimSpace(target))
 		if target == "" {
 			continue
@@ -69,8 +69,8 @@ func parsePorts(pspec string) ([]int, error) {
 	// Use a map to dedup and shuffle ports
 	ports := make(map[int]bool)
 
-	bits := strings.Split(pspec, ",")
-	for _, bit := range bits {
+	bits := strings.SplitSeq(pspec, ",")
+	for bit := range bits {
 		bit = strings.TrimSpace(bit)
 
 		if bit == "" {

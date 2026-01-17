@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"io"
+	"maps"
 	"net"
 	"os"
 	"regexp"
@@ -219,12 +220,12 @@ func runScan(cmd *cobra.Command, args []string) {
 
 	// Parse the check lists and categories
 	enabledChecks := make(map[string]struct{})
-	for _, v := range strings.Split(gEnabledChecks, ",") {
+	for v := range strings.SplitSeq(gEnabledChecks, ",") {
 		v = strings.ToLower(strings.TrimSpace(v))
 		enabledChecks[v] = struct{}{}
 	}
 	enabledCategories := make(map[string]struct{})
-	for _, v := range strings.Split(gEnabledCategories, ",") {
+	for v := range strings.SplitSeq(gEnabledCategories, ",") {
 		v = strings.ToLower(strings.TrimSpace(v))
 		enabledCategories[v] = struct{}{}
 	}
@@ -455,7 +456,7 @@ func (conf *ScanConfig) ScanTarget(ch chan *auth.Options, wg *sync.WaitGroup, st
 
 func uniqueUsers(ustr string) []string {
 	uniq := make(map[string]struct{}, 0)
-	for _, user := range strings.Split(ustr, ",") {
+	for user := range strings.SplitSeq(ustr, ",") {
 		uniq[user] = struct{}{}
 	}
 	res := []string{}
@@ -744,9 +745,7 @@ func (conf *ScanConfig) TestSession(addr string, options *auth.Options, root *au
 func (conf *ScanConfig) GetAllHostKeys(addr string, options *auth.Options, root *auth.AuthResult, cached *auth.AuthResult) {
 	if cached != nil && len(cached.HostKeys) > 0 {
 		// Use cached hostkeys if available
-		for k, v := range cached.HostKeys {
-			root.HostKeys[k] = v
-		}
+		maps.Copy(root.HostKeys, cached.HostKeys)
 		return
 	}
 

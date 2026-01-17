@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"slices"
 	"strings"
 	"time"
 
@@ -58,24 +59,14 @@ func NewAuthResult() *AuthResult {
 }
 
 func (r *AuthResult) SupportsAuth(t string) bool {
-	for _, v := range r.Methods {
-		if v == t {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(r.Methods, t)
 }
 
 func (r *AuthResult) SupportsHostKey(t string) bool {
 	if r.KexInit == nil {
 		return false
 	}
-	for _, v := range r.KexInit.ServerHostKeyAlgos {
-		if v == t {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(r.KexInit.ServerHostKeyAlgos, t)
 }
 
 func (r *AuthResult) SupportsPubKeyType(t string) bool {
@@ -86,7 +77,7 @@ func (r *AuthResult) SupportsPubKeyType(t string) bool {
 		// has told us otherwise via the extension.
 		return true
 	}
-	for _, kt := range strings.Split(okTypes, ",") {
+	for kt := range strings.SplitSeq(okTypes, ",") {
 		kt = strings.TrimSpace(kt)
 		if strings.EqualFold(kt, t) {
 			return true
