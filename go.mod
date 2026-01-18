@@ -3,7 +3,7 @@ module github.com/runZeroInc/sshamble
 go 1.24.0
 
 // NOTE: Uncomment to test with a development version of excrypto
-// replace github.com/runZeroInc/excrypto => ../excrypto
+replace github.com/runZeroInc/excrypto => ../excrypto
 
 require (
 	github.com/google/go-cmp v0.7.0
