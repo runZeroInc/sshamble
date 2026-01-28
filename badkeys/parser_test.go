@@ -141,9 +141,11 @@ func runTestCase(t *testing.T, tc testCase) {
 		t.Fatalf("key type mismatch: got %v, want %v", ktype, tc.KeyType)
 	}
 
-	k, err := PrefixFromPublicKey(publicKey)
+	praw, err := PrefixFromPublicKey(publicKey)
 	if err != nil {
-		t.Fatalf("failed to parse key: %v", err)
+		t.Fatalf("failed to get raw prefix: %v", err)
 	}
-	t.Logf("key prefix: %s", k)
+
+	penc := PrefixToString(praw)
+	t.Logf("badkeys.hash: %s", penc)
 }

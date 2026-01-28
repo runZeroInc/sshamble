@@ -6,6 +6,7 @@ import (
 	stdecdsa "crypto/ecdsa"
 	stded25519 "crypto/ed25519"
 	stdrsa "crypto/rsa"
+	"encoding/base64"
 	"fmt"
 
 	"github.com/runZeroInc/excrypto/crypto/dsa"
@@ -75,4 +76,8 @@ func PrefixFromPublicKey(pub any) ([]byte, error) {
 	}
 	sha256sum := sha256.Sum256(rawb)
 	return sha256sum[0:15], nil
+}
+
+func PrefixToString(prefix []byte) string {
+	return base64.RawStdEncoding.EncodeToString(prefix)
 }
