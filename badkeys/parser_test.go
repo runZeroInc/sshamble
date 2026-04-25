@@ -1,11 +1,18 @@
 package badkeys
 
 import (
+	stddsa "crypto/dsa"
+	stdecdh "crypto/ecdh"
 	"crypto/ecdsa"
 	"crypto/ed25519"
+	stdrsa "crypto/rsa"
 	"encoding/pem"
 	"testing"
 
+	exdsa "github.com/runZeroInc/excrypto/crypto/dsa"
+	execdh "github.com/runZeroInc/excrypto/crypto/ecdh"
+	execdsa "github.com/runZeroInc/excrypto/crypto/ecdsa"
+	exed25519 "github.com/runZeroInc/excrypto/crypto/ed25519"
 	"github.com/runZeroInc/excrypto/crypto/rsa"
 	"github.com/runZeroInc/excrypto/crypto/x509"
 	cases "github.com/runZeroInc/sshamble/badkeys/tests"
@@ -89,12 +96,27 @@ func runTestCase(t *testing.T, tc testCase) {
 		publicKey = &pk.PublicKey
 		privateKey = pk
 		pubOK = true
+	case *stdrsa.PrivateKey:
+		ktype = "rsa"
+		publicKey = &pk.PublicKey
+		privateKey = pk
+		pubOK = true
+	case *execdsa.PrivateKey:
+		ktype = "ecdsa"
+		publicKey = &pk.PublicKey
+		privateKey = pk
+		pubOK = true
 	case *ecdsa.PrivateKey:
 		ktype = "ecdsa"
 		publicKey = &pk.PublicKey
 		privateKey = pk
 		pubOK = true
-	case *ed25519.PrivateKey:
+	case exed25519.PrivateKey:
+		ktype = "ed25519"
+		publicKey = pk.Public()
+		privateKey = pk
+		pubOK = true
+	case ed25519.PrivateKey:
 		ktype = "ed25519"
 		publicKey = pk.Public()
 		privateKey = pk
@@ -108,6 +130,8 @@ func runTestCase(t *testing.T, tc testCase) {
 			publicKey, err = x509.ParsePKCS1PublicKey(b.Bytes)
 			if err != nil {
 				decodeErrs = append(decodeErrs, "pub-pkcs1: "+err.Error())
+			} else {
+				pubOK = true
 			}
 		} else {
 			pubOK = true
@@ -120,11 +144,43 @@ func runTestCase(t *testing.T, tc testCase) {
 	case *rsa.PublicKey:
 		ktype = "rsa"
 		publicKey = pk
+	case *stdrsa.PublicKey:
+		ktype = "rsa"
+		publicKey = pk
+	case *execdsa.PublicKey:
+		ktype = "ecdsa"
+		publicKey = pk
 	case *ecdsa.PublicKey:
 		ktype = "ecdsa"
 		publicKey = pk
-	case *ed25519.PublicKey:
+	case exed25519.PublicKey:
 		ktype = "ed25519"
+		publicKey = pk
+	case ed25519.PublicKey:
+		ktype = "ed25519"
+		publicKey = pk
+	case *exdsa.PublicKey:
+		ktype = "dsa"
+		publicKey = pk
+	case *stddsa.PublicKey:
+		ktype = "dsa"
+		publicKey = pk
+	case *execdh.PublicKey:
+		if pk.Curve() == execdh.X25519() {
+			ktype = "x25519"
+		} else {
+			ktype = "ecdh"
+		}
+		publicKey = pk
+	case *stdecdh.PublicKey:
+		if pk.Curve() == stdecdh.X25519() {
+			ktype = "x25519"
+		} else {
+			ktype = "ecdh"
+		}
+		publicKey = pk
+	case x509.X25519PublicKey:
+		ktype = "x25519"
 		publicKey = pk
 	}
 
