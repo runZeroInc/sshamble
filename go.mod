@@ -9,7 +9,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/mmcloughlin/professor v0.0.0-20170922221822-6b97112ab8b3
-	github.com/runZeroInc/excrypto v0.0.0-20260425200743-c90714db1e7b
+	github.com/runZeroInc/excrypto v0.35.0
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
