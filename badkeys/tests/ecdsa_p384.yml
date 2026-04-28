@@ -1,0 +1,10 @@
+name: ECDSA P-384 Private Key
+comment: Higher-strength ECDSA variant for coverage across supported NIST curves.
+keyType: ecdsa
+key: |-
+  -----BEGIN PRIVATE KEY-----
+  MIG2AgEAMBAGByqGSM49AgEGBSuBBAAiBIGeMIGbAgEBBDDunAsSiHOrREJrVrlE
+  zuVsuODLajuPAymv5Q0mTA8pIhSDQXIsa6hfDoe8K+ibAQShZANiAAQVlf80Fdxp
+  0UhCHdY8Tx25Tqz/RVAalIJH2llPczoIEM/n6sk5gNR2FxfBLBuIndBeUQv0XBxI
+  yWxPcTUSOINxjcxKwsHaJtvosgZ4H2rfr3GLMMZzcm/pLw9tAAcvN4o=
+  -----END PRIVATE KEY-----

@@ -1,0 +1,9 @@
+name: X25519 Modern Public Key
+comment: Modern Curve25519 public key coverage for the supported X25519 hashing
+  path. This is not post-quantum, but it is the closest modern key family
+  implemented beyond the classic SSH key types.
+keyType: x25519
+key: |-
+  -----BEGIN PUBLIC KEY-----
+  MCowBQYDK2VuAyEAFyMUk2Xo7bihdKZr2+odfIPvvaJEj+jjEhC3xQc8tVk=
+  -----END PUBLIC KEY-----

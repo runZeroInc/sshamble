@@ -1,0 +1,21 @@
+name: RSA 1024 Legacy Private Key
+comment: Weak old RSA key size to cover insecure legacy PEM private key parsing
+  and hashing.
+keyType: rsa
+key: |-
+  -----BEGIN PRIVATE KEY-----
+  MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBALM31Su5InGugVJw
+  03P86pRf1QqGJmMVQqvDPA6nLdOSyjl8IJG9qjxFB68XMbqf6OOfZsHlx1CtmDF3
+  xQA9YH9ZWX/mobnCDEFmheM8T2kPQe2tBdFCjccrF3W2gYA9tFUYZs+Ilvba27H6
+  2/ediivy0/ojB8jmx2KrWWYb2oWJAgMBAAECgYBmddktsh57F+VfmJmLimEiitdl
+  uORhaVpAkNHZHsMYXqe2zbxhFiopYt3NwFjx9VJUMGGzIQcenOCSB4Nda7mqn51K
+  4eypvQt1ryPt30BKBUPLdCFg8OJYVQXzJZ0b4qYOmt1cTem/JUuevilFmGRUr65A
+  gDNa+qYEXC3nt3QKAQJBAOSr3BOV3gq4xMx/mgMJBPNb2CEtjRMbdLuPxHSzHo6k
+  3YCHejMsbp9r4hp11DsFHXkzrOcptaz4oEMhamNguLkCQQDIovbUt3AwMs8J2QxI
+  kKNQCC/klF8QBZ9RuYqIj9AgP3o17AUnBexZNSJfpbWdwgy51OIjYXu41KRiPsoG
+  gStRAkAus+8BzQUJeY0wGwuQfSIWtfZhaFU8xsnDmOxNzVt7VK6sln7dvsBlLPqD
+  3vbWiwfm/ifdGoaxaiIJM+TvoQx5AkBOOPMA5e/Qas67aSrX08RIPJjnhk01wutl
+  gnAXY/Jh0D3GbhloKHAIK6YWIlYXhoNNpEjyQFxrKERapV5AgPWxAkEAnliacbWt
+  aGbZS5tRI70DSrcH+u8XNkabzduTXRp84zJ6rlNGgHs6gBpA/b7V/FmnajL3X+14
+  jog/d6f5pBwc7w==
+  -----END PRIVATE KEY-----

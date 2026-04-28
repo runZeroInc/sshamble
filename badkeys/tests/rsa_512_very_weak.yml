@@ -1,0 +1,14 @@
+name: RSA 512 Very Weak Private Key
+comment: Deliberately tiny RSA key to cover very old and insecure key material.
+keyType: rsa
+key: |-
+  -----BEGIN PRIVATE KEY-----
+  MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEAqrkftwcmmAWKXpZl
+  eTSMVv52hhO2+EyyOcvfmA2PA2B+jsXqRLSmipuegR2QpjkywPikdex6qaT50MhV
+  jwSgOwIDAQABAkEAl5OTyAIuTu0kZEStxYZVT+vPuc0JN72Iw+3yEGOBZWG0qskm
+  fib4AYeKgD8nQlHzgJ/Ef49gXiWMxPHP0ICRIQIhANhCGlfzHaPc3cVRHYRjZLPT
+  t3GyVtW9xJ2jzVHNqILxAiEAyhjRNX+0XSwJ6t/2yxVLDqaQoxfmMUwhoy3GOG4x
+  PesCIFYoT9KGW2KzVe+M15Os/avfR5CWmp3hUvnzDpPuuZohAiBHhTrcnQIeiwxD
+  c9kqC7IRUD8ViMqtHY0162gf5ldE2wIhALuqGP6PJGfb6NINJ3gafNA46FGYIWUK
+  A+qF2TnHaPvm
+  -----END PRIVATE KEY-----

@@ -1,0 +1,12 @@
+name: ECDSA P-521 Private Key
+comment: Largest NIST ECDSA curve supported by typical SSH implementations.
+keyType: ecdsa
+key: |-
+  -----BEGIN PRIVATE KEY-----
+  MIHuAgEAMBAGByqGSM49AgEGBSuBBAAjBIHWMIHTAgEBBEIBOHNQ7XYIdx1dtztT
+  7hrnSH+Ava9MDje28iAoE0v20jqvJMqfSpzQtsI6bHDc2AINYuLHYgijIru9+9pt
+  d4OP10+hgYkDgYYABADUkYJ5XV0HTDXTYXeuQu7+fBf3lWokJ7DugVcorTCieI8d
+  Vvu02ez74j1sd8IlQ5NY/uJW4bUqT5rg/XLeYVz23ACsHKqGVmvs+Ql6b/XanjUM
+  4LkVNuNIJ+pWdoeV/ipCphvEg3XnBNXGoMHGtRqBLpnbLbhzz416J3zff2vN84ZI
+  WA==
+  -----END PRIVATE KEY-----

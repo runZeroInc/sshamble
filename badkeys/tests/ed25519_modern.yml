@@ -1,0 +1,7 @@
+name: Ed25519 Modern Private Key
+comment: Contemporary SSH key type with compact modern private key encoding.
+keyType: ed25519
+key: |-
+  -----BEGIN PRIVATE KEY-----
+  MC4CAQAwBQYDK2VwBCIEICAy5fQCuNqe5FoE6+mLvyD4Gip4hoebhK0oOTY3F+Pl
+  -----END PRIVATE KEY-----

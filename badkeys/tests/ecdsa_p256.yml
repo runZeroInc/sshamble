@@ -1,0 +1,9 @@
+name: ECDSA P-256 Private Key
+comment: Common modern elliptic-curve SSH key on the NIST P-256 curve.
+keyType: ecdsa
+key: |-
+  -----BEGIN PRIVATE KEY-----
+  MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgk1NiW92Y1XvDLIe9
+  otm1R4epNmZwa0SoBULaZTpb67ShRANCAATZO3Lt3C4nlqacTFlTmMSLulETmclw
+  e4gHoNVOw+wV7zNhzjGCP09QuwPXdg6HlXtEqvVB3D7f+t91lDIB3sjm
+  -----END PRIVATE KEY-----

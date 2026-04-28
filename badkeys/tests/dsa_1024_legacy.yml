@@ -1,0 +1,18 @@
+name: DSA 1024 Legacy Public Key
+comment: Ancient and weak SSH DSS style key material, kept as a public key
+  fixture because DSA is legacy and typically only needed for parsing and
+  fingerprint coverage.
+keyType: dsa
+key: |-
+  -----BEGIN PUBLIC KEY-----
+  MIIBwDCCATQGByqGSM44BAEwggEnAoGBAO8S9U4Zn2HGWdjNNrfM/1k7vURd4G/4
+  00yVQX9GVwnGPfaOx+EGaajfsJEuiiKBzXeJjLZgN+5vk75CnxRYZRQexoCwssmP
+  hj4EOXPP8mIf/yUgSndk0kAuPqEuyZ5qE3tlhC7lJq1I5LbfeNq5sy2RxTJ/yGEq
+  jdXcWBD46ck1Ah0Amk6M09DvHPDIS0YFPhakHo0I/RpH4SFdtOSQcwKBgQCiuzWe
+  AaYPmQgRL1GbWIgWHh3cw0zYiltjOeLcQkhzBF2Wg/pMBlv6D+um2QGcIWdtOhT/
+  6EfGHfaY5riR/Q2/NXEPzHG816s7UPoFFfrW5ibg7/EMqeAzZRM3dFKIql0+o0SC
+  eopnYWHzNFu0xncOF2O9bI+JrrhYxdC68IEReQOBhQACgYEA0srq4q1Q5/rMfyIW
+  LvV2JS87xnKwraf6vnApqYCca7+hf11LJgq7PLbw/keFQ+edagrhRLjhdX0PZQ05
+  Uv9gOqqxkNU6FMYlvL5ZxIQSsN2rityVgOsa4e7adNoEb1NzwFNAmf3xnT+hCTVW
+  rqfviwWsHrXEOMQSkeNKSUEdmeo=
+  -----END PUBLIC KEY-----
