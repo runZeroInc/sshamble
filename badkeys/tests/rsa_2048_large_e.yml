@@ -1,0 +1,21 @@
+name: RSA 2048 Public Key With Large Public Exponent
+comment: |-
+  Real-world pathological RSA public key whose public exponent E exceeds the
+  historical 32-bit cap (here ~1397 bits, comparable to the keys observed in
+  the wild by zmap/zgrab2 and runZero). Verifies sshamble can parse, fingerprint,
+  and round-trip RSA keys with arbitrarily large E through excrypto.
+  See: https://github.com/runZeroInc/excrypto/pull/78 and https://github.com/zmap/zgrab2/pull/714
+keyType: rsa
+key: |-
+  -----BEGIN PUBLIC KEY-----
+  MIIBzzANBgkqhkiG9w0BAQEFAAOCAbwAMIIBtwKCAQEAkurAjiPidJjnDVC/agAy
+  rMKpmW635I/jT5Jg9snANq6Awt1mXoHd3gUjq32EHwr7Tn+jIqtg8PSvShd6iq3o
+  StSVCyYFjP2kibX+PsZiv3WlJWiXOPjHWnd2fN77VRpZkh0mLxS1HV6ptIgDmTgv
+  RmQbfX8ZtcCbXORqHVy+ZYIm67wc0K142bco5mD0EzYz8Ldh3W1pEnz9VEKFImAR
+  m76pI4JQMuk+lK0oH0wyLe06maGqoVBKblmugo+lgghRBBg5KCfpu+OH+I/AIAtD
+  6ACejQcuTcbJTbWcxzK74v1H8DqstPhLUU6cgwD/65p/Iw2j23iC3/A0oXWKjsd4
+  twKBrxC0fZgQ7eYj8ptZqxZBkTN2C5UqUsu0Z1Xe4ACTg6K/QHFOWab/4DQnD5nh
+  ZnTEchDQbZriXOJg7YkdAVK+RNqJVpq0DeaBPPzN1+ylAH6QcRle+cPjglIZQaD5
+  T795U+jbMcNWuVA4bf0WcXWjsgXkPdoU9V4mJBAo+6HeSz5IVc44a9Aa5czvpgqW
+  7FOZQot0cEQFuHXPSKapd/6go3PmPflp53RqNsurSsF6NGs=
+  -----END PUBLIC KEY-----
