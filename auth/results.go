@@ -70,20 +70,29 @@ func (r *AuthResult) SupportsHostKey(t string) bool {
 }
 
 func (r *AuthResult) SupportsPubKeyType(t string) bool {
-	// Example: ssh-ed25519,sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-256,rsa-sha2-512,ssh-rsa,ssh-dss
 	okTypes, ok := r.Extensions["server-sig-algs"]
-	if !ok {
-		// Assume all types are supported unless the server
-		// has told us otherwise via the extension.
+	if !ok || strings.TrimSpace(okTypes) == "" {
 		return true
 	}
+	// ssh-rsa keys are usable when the server advertises any RSA signature algo;
+	// modern OpenSSH (>= 8.8) only offers rsa-sha2-256/rsa-sha2-512, not ssh-rsa.
+	wanted := sigAlgosForKeyType(t)
 	for kt := range strings.SplitSeq(okTypes, ",") {
 		kt = strings.TrimSpace(kt)
-		if strings.EqualFold(kt, t) {
-			return true
+		for _, w := range wanted {
+			if strings.EqualFold(kt, w) {
+				return true
+			}
 		}
 	}
 	return false
+}
+
+func sigAlgosForKeyType(t string) []string {
+	if t == "ssh-rsa" {
+		return []string{"ssh-rsa", "rsa-sha2-256", "rsa-sha2-512"}
+	}
+	return []string{t}
 }
 
 func (r *AuthResult) AddVuln(v VulnResult) {
