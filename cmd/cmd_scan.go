@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"io"
 	"maps"
+	"math/big"
 	"net"
 	"os"
 	"regexp"
@@ -45,6 +46,7 @@ var (
 	gEnabledChecks              string
 	gPrivateKeyFile             string
 	gPrivateKeyPassphrase       string
+	gMikrotikPubKeyFile         string
 	gPassword                   string
 	gPasswordFile               string
 	gInteract                   string
@@ -127,6 +129,7 @@ func init() {
 	scanCmd.Flags().StringVar(&gEnabledCategories, "categories", strings.Join(categories, ","), "The list of categories to include.")
 	scanCmd.Flags().StringVar(&gPrivateKeyFile, "private-key", "", "The optional file containing a private key for authentication")
 	scanCmd.Flags().StringVar(&gPrivateKeyPassphrase, "private-key-passphrase", "", "The optional passphrase for a private key file")
+	scanCmd.Flags().StringVar(&gMikrotikPubKeyFile, "mikrotik-pubkey", "", "The victim's authorized RSA public key file for the CVE-2026-67276 Mikrotik bypass check")
 	scanCmd.Flags().StringVar(&gPassword, "password", "", "An optional password to try for authentication")
 	scanCmd.Flags().StringVar(&gPasswordFile, "password-file", "", "An optional file with clear-text passwords to try for authentication")
 	scanCmd.Flags().StringVarP(&gInteract, "interact", "I", "none", "Open an interactive shell for the 'first', 'all', or 'none' sessions")
@@ -146,16 +149,17 @@ func init() {
 var TestKeyRSASizes = []int{1024, 2048, 4096}
 
 type ScanConfig struct {
-	EnabledChecks  map[string]struct{}
-	Logger         *logrus.Logger
-	OutputWriter   io.Writer
-	TestKeyRSA1024 ssh.Signer
-	TestKeyRSA2048 ssh.Signer
-	TestKeyRSA4096 ssh.Signer
-	TestKeyED25519 ssh.Signer
-	BadKeyCache    *badkeys.Cache
-	outMutex       sync.Mutex
-	statResult     atomic.Uint64
+	EnabledChecks      map[string]struct{}
+	Logger             *logrus.Logger
+	OutputWriter       io.Writer
+	MikrotikRSAModulus *big.Int
+	TestKeyRSA1024     ssh.Signer
+	TestKeyRSA2048     ssh.Signer
+	TestKeyRSA4096     ssh.Signer
+	TestKeyED25519     ssh.Signer
+	BadKeyCache        *badkeys.Cache
+	outMutex           sync.Mutex
+	statResult         atomic.Uint64
 }
 
 func (conf *ScanConfig) IsCheckEnabled(check string) bool {
@@ -263,6 +267,9 @@ func runScan(cmd *cobra.Command, args []string) {
 			conf.Logger.Fatalf("failed to load private key: %v", err)
 		}
 	}
+
+	// Configure the victim RSA modulus for the Mikrotik bypass check
+	conf.MikrotikRSAModulus = loadMikrotikModulus(conf)
 
 	// Generate test keys
 	generateTestKeys(conf)
@@ -470,6 +477,20 @@ type sshCheckFunc func(string, *ScanConfig, *auth.Options, *auth.AuthResult) *au
 
 func (conf *ScanConfig) ScanHost(options *auth.Options, cached *auth.AuthResult) *auth.AuthResult {
 	addr := net.JoinHostPort(options.Host, strconv.FormatUint(uint64(options.Port), 10))
+
+	// Run HTTP-based vulnerability checks once per host (not per SSH user)
+	// CVE-2026-67281 webfig traversal — not yet working, commented out
+	// if cached == nil {
+	// 	webfigRoot := auth.NewAuthResult()
+	// 	webfigRoot.Host = options.Host
+	// 	webfigRoot.Port = options.Port
+	// 	webfigRoot.User = options.Username
+	// 	_ = sshCheckVulnMikrotikWebfigTraversal(addr, conf, options, webfigRoot)
+	// 	if len(webfigRoot.Vulns) > 0 {
+	// 		conf.WriteOutput(webfigRoot)
+	// 	}
+	// }
+
 	root := conf.GetSession(addr, options, cached)
 	if root.Unreachable {
 		conf.Logger.Debugf("%s is unreachable: %v", addr, root.Error)
@@ -691,11 +712,16 @@ func (conf *ScanConfig) GetSession(addr string, options *auth.Options, cached *a
 
 	// Process pre-session vulnerability checks
 	vulnChecks := []sshCheckFunc{
+		sshCheckVulnMikrotikPubkey,
 		sshCheckVulnExecSkipUserAuth,
 		sshCheckVulnExecSkipAuth,
 	}
 	for _, check := range vulnChecks {
-		_ = check(addr, conf, options, root)
+		res = check(addr, conf, options, root)
+		shouldInteract()
+		if shouldReturn() {
+			return
+		}
 	}
 	return
 }

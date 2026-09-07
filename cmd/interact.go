@@ -40,7 +40,12 @@ func (conf *ScanConfig) StartInteract(addr string, options *auth.Options, root *
 	var res *auth.AuthResult
 	if root.SessionAuth != nil {
 		// Use the ssh.AuthMethod cached on the root session
-		res = auth.SSHAuth(addr, options.WithSessionHandler(conf.InteractHandler(addr, options, root)), auth.SSHAuthHandlerSingle(root.SessionAuth))
+		var handler auth.SessionHandler = conf.InteractHandler(addr, options, root)
+		if root.SessionMethod == checkVulnMikrotikPubkey {
+			// RouterOS's shell channel is a full-screen TUI; drive it via exec.
+			handler = conf.MikrotikInteractHandler(addr, options, root)
+		}
+		res = auth.SSHAuth(addr, options.WithSessionHandler(handler), auth.SSHAuthHandlerSingle(root.SessionAuth))
 	} else {
 		switch root.SessionMethod {
 		case checkSkipSSHUserAuth:
