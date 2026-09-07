@@ -713,6 +713,7 @@ func (conf *ScanConfig) GetSession(addr string, options *auth.Options, cached *a
 	// Process pre-session vulnerability checks
 	vulnChecks := []sshCheckFunc{
 		sshCheckVulnMikrotikPubkey,
+		sshCheckVulnMikrotikPreauthRekey,
 		sshCheckVulnExecSkipUserAuth,
 		sshCheckVulnExecSkipAuth,
 	}

