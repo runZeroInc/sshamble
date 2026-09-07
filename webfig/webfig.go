@@ -186,13 +186,13 @@ func (s *Session) encryptURI(uri string) []byte {
 
 // encodeURIComponent mimics JavaScript's encodeURIComponent as used by webfig.
 // The webfig encryptURI pipeline is:
-//   1. UTF-8 encode the path
-//   2. AES-128-CTR encrypt
-//   3. Prepend sessionID(4) || seq(4) || IV(16)
-//   4. Convert to JS string via byte2str (0x00 -> U+0100, else identity)
-//   5. Apply decodeZeros (charCodeAt & 0xff, mapping U+0100 back to \x00)
-//   6. Apply encodeURIComponent (which encodes \x00 as %00)
-//   7. Apply encodeURLComponent (which additionally encodes !'()*)
+//  1. UTF-8 encode the path
+//  2. AES-128-CTR encrypt
+//  3. Prepend sessionID(4) || seq(4) || IV(16)
+//  4. Convert to JS string via byte2str (0x00 -> U+0100, else identity)
+//  5. Apply decodeZeros (charCodeAt & 0xff, mapping U+0100 back to \x00)
+//  6. Apply encodeURIComponent (which encodes \x00 as %00)
+//  7. Apply encodeURLComponent (which additionally encodes !'()*)
 //
 // The net effect: each byte b of the binary frame is encoded as:
 //   - b == 0x00  -> %00
