@@ -17,12 +17,12 @@ github.com/logrusorgru/aurora/v3 v3.0.0 h1:R6zcoZZbvVcGMvDCKo45A9U/lzYyzl5NfYIvz
 github.com/logrusorgru/aurora/v3 v3.0.0/go.mod h1:vsR12bk5grlLvLXAYrBsb5Oc/N+LxAlxggSjiwMnCUc=
 github.com/mmcloughlin/professor v0.0.0-20170922221822-6b97112ab8b3 h1:2YMbJ6WbdQI9K73chxh9OWMDsZ2PNjAIRGTonp3T0l0=
 github.com/mmcloughlin/professor v0.0.0-20170922221822-6b97112ab8b3/go.mod h1:LQkXsHRSPIEklPCq8OMQAzYNS2NGtYStdNE/ej1oJU8=
-github.com/msuiche/excrypto v0.43.2-0.20260907192101-05292dc2f370 h1:U728YNUJrCpd83oxpTZw+xXK9+toDGrrRI/YQTq9U2w=
-github.com/msuiche/excrypto v0.43.2-0.20260907192101-05292dc2f370/go.mod h1:CQo6LfXwh+dpf0OA7wO4MLUCDJAqIKVq/SSAQsg6TP0=
 github.com/pelletier/go-toml/v2 v2.4.3 h1:GTRvJQutkOSftxIFD5xw9aepkYNuPWmVJpffdDPYVpY=
 github.com/pelletier/go-toml/v2 v2.4.3/go.mod h1:2gIqNv+qfxSVS7cM2xJQKtLSTLUE9V8t9Stt+h56mCY=
 github.com/rogpeppe/go-internal v1.9.0 h1:73kH8U+JUqXU8lRuOHeVHaa/SZPifC7BkcraZVejAe8=
 github.com/rogpeppe/go-internal v1.9.0/go.mod h1:WtVeX8xhTBvf0smdhujwtBcq4Qrzq/fJaraNFVN+nFs=
+github.com/runZeroInc/excrypto v0.43.2 h1:ngXpeP+zrsXeCw3LF8i6u/9BQiWLPpYz1yopjhkF1H0=
+github.com/runZeroInc/excrypto v0.43.2/go.mod h1:CQo6LfXwh+dpf0OA7wO4MLUCDJAqIKVq/SSAQsg6TP0=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/sagikazarmark/locafero v0.12.0 h1:/NQhBAkUb4+fH1jivKHWusDYFjMOOKU88eegjfxfHb4=
 github.com/sagikazarmark/locafero v0.12.0/go.mod h1:sZh36u/YSZ918v0Io+U9ogLYQJ9tLLBmM4eneO6WwsI=

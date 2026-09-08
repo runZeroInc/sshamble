@@ -13,6 +13,9 @@ func initVulnChecks() {
 	// MikroTik SSH pre-auth rekey session (CVE-2026-67279)
 	registerCheck(checkVulnMikrotikPreauthRekey, "vuln", false, true)
 
+	// MikroTik SSH login-helper fd injection (CVE-2026-86060)
+	registerCheck(checkVulnMikrotikFD2Inject, "vuln", false, true)
+
 	// MikroTik WebFig unauthenticated file read (CVE-2026-67281) — not yet working
 	// registerCheck(checkVulnMikrotikWebfigTraversal, "vuln", false, true)
 }
