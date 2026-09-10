@@ -33,3 +33,33 @@ func TestMikrotikFD2NoPrompt(t *testing.T) {
 		}
 	}
 }
+
+func TestMikrotikFD2TerminalFilter(t *testing.T) {
+	cases := []struct {
+		in   []byte
+		want string
+	}{
+		{[]byte("[0@MikroTik] > \x1b[6n"), "[0@MikroTik] > "},
+		{[]byte("\x1bZ[0@MikroTik] > "), "[0@MikroTik] > "},
+		{[]byte("plain text"), "plain text"},
+		{[]byte("\x1b[24;80R"), "\x1b[24;80R"}, // not a query, passed through
+	}
+
+	for _, tc := range cases {
+		var f mikrotikFD2TerminalFilter
+		got := string(f.Filter(tc.in))
+		if got != tc.want {
+			t.Errorf("Filter(%q) = %q, want %q", tc.in, got, tc.want)
+		}
+	}
+}
+
+func TestMikrotikFD2TerminalFilterSplit(t *testing.T) {
+	// A query sequence split across two writes must still be stripped.
+	var f mikrotikFD2TerminalFilter
+	got := string(f.Filter([]byte("abc\x1b[")))
+	got += string(f.Filter([]byte("6n] > ")))
+	if got != "abc] > " {
+		t.Errorf("split filter got %q, want %q", got, "abc] > ")
+	}
+}
