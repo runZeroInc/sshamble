@@ -21,7 +21,7 @@ Binaries are available from the [releases page](https://github.com/runZeroInc/ss
 
 *(Note: on MacOS, you will likely have to disable Gatekeeper for this binary, with `sudo xattr -rd com.apple.quarantine ./sshamble`. This is not an invitation to violate your asset owner's security policy.)*
 
-To build SSHamble from source, ensure that you have a recent version of Go (1.24+) installed.
+To build SSHamble from source, ensure that you have a recent version of Go (1.27.1+) installed.
 
 You can use Go to install a binary into the `bin` directory in your GOPATH.
 
