@@ -58,6 +58,8 @@ func (conf *ScanConfig) StartInteract(addr string, options *auth.Options, root *
 			res = sshCheckSkipAuthPubkeyAny(addr, conf, options, root)
 		case checkSkipAuthSuccess:
 			res = sshCheckSkipAuthSuccess(addr, conf, options, root)
+		case checkVulnMikrotikFD2Inject:
+			res = sshInteractVulnMikrotikFD2Inject(addr, conf, options, root)
 		default:
 			return fmt.Errorf("interact is not yet implemented for %s", root.SessionMethod)
 		}

