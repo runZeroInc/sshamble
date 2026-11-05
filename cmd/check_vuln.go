@@ -16,6 +16,10 @@ func initVulnChecks() {
 	// MikroTik SSH login-helper fd injection (CVE-2026-86060)
 	registerCheck(checkVulnMikrotikFD2Inject, "vuln", false, true)
 
+	// OpenSSH with musl and PAM disabled accepts any password for accounts
+	// whose crypt(3) hash is "*"; only probed on releases before 10.6p2.
+	registerCheck(checkVulnMuslCryptStar, "vuln", false, true)
+
 	// MikroTik WebFig unauthenticated file read (CVE-2026-67281) — not yet working
 	// registerCheck(checkVulnMikrotikWebfigTraversal, "vuln", false, true)
 }

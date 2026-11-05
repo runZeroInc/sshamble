@@ -1,0 +1,27 @@
+# Patched control for the vuln-musl-crypt-star check.
+#
+# Same account layout as the vulnerable target, but sshd comes from the
+# Alpine openssh-server package, which carries the upstream
+# MIN_PASSWORD_HASH_LEN fix while still announcing OpenSSH_9.7. The check
+# runs against this banner but must not report a finding.
+#
+# Build:  docker build -t sshamble-musl-crypt-star-patched -f docs/targets/musl-crypt-star/Dockerfile.patched docs/targets/musl-crypt-star
+# Run:    docker run -d --rm --name sshamble-musl-crypt-star-patched -p 2223:22 sshamble-musl-crypt-star-patched
+# Scan:   ./sshamble scan -u alice -p 2223 127.0.0.1
+FROM alpine:3.20
+
+RUN apk add --no-cache openssh-server \
+    && printf 'PasswordAuthentication yes\nPermitRootLogin yes\nSubsystem sftp internal-sftp\n' > /etc/ssh/sshd_config \
+    && ssh-keygen -A \
+    && adduser -D -s /bin/sh alice \
+    && adduser -D -s /bin/sh bob \
+    && sed -i \
+        -e 's/^root:x:/root:*:/' \
+        -e 's/^alice:x:/alice:*:/' \
+        -e 's|^bob:x:|bob:$6$rounds=5000$salt$placeholder:|' \
+        /etc/passwd \
+    && rm -f /etc/shadow \
+    && chmod 644 /etc/passwd
+
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D", "-e"]

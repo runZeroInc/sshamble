@@ -3,3 +3,5 @@
 .DS_Store
 data
 crypto.patch
+/sshamble
+/tmp

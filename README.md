@@ -21,7 +21,7 @@ Binaries are available from the [releases page](https://github.com/runZeroInc/ss
 
 *(Note: on MacOS, you will likely have to disable Gatekeeper for this binary, with `sudo xattr -rd com.apple.quarantine ./sshamble`. This is not an invitation to violate your asset owner's security policy.)*
 
-To build SSHamble from source, ensure that you have a recent version of Go (1.27.1+) installed.
+To build SSHamble from source, ensure that you have a recent version of Go (1.26.4+) installed.
 
 You can use Go to install a binary into the `bin` directory in your GOPATH.
 
@@ -104,7 +104,7 @@ Usage:
 
 Flags:
       --categories string                     The list of categories to include. (default "bypass,gssapi,hostkey,keyboard,password,pubkey,userenum,vuln")
-      --checks string                         The list of checks to run. Non-default ("userenum-none-timing,userenum-password-timing,userenum-pubkey-timing,vuln-exec-skip-auth,vuln-exec-skip-userauth") (default "badkeys-blocklist,gssapi-any,keyboard-any,keyboard-empty,keyboard-null,keyboard-user,password-any,password-change-empty,password-change-null,password-empty,password-null,password-user,pubkey-any,pubkey-bulkhalf,pubkey-hunt,pubkey-user,skip-auth,skip-auth-method-empty,skip-auth-method-null,skip-auth-none,skip-auth-pubkeyany,skip-auth-success,skip-ssh-userauth,vuln-generic-env,vuln-gogs-env,vuln-ruckus-password-escape,vuln-softserve-env,vuln-tcp-forward")
+      --checks string                         The list of checks to run. Non-default ("userenum-none-timing,userenum-password-timing,userenum-pubkey-timing,vuln-exec-skip-auth,vuln-exec-skip-userauth") (default "badkeys-blocklist,gssapi-any,keyboard-any,keyboard-empty,keyboard-null,keyboard-user,password-any,password-change-empty,password-change-null,password-empty,password-null,password-user,pubkey-any,pubkey-bulkhalf,pubkey-hunt,pubkey-user,skip-auth,skip-auth-method-empty,skip-auth-method-null,skip-auth-none,skip-auth-pubkeyany,skip-auth-success,skip-ssh-userauth,vuln-generic-env,vuln-gogs-env,vuln-mikrotik-fd2-inject,vuln-mikrotik-preauth-rekey,vuln-mikrotik-pubkey-bypass,vuln-musl-crypt-star,vuln-ruckus-password-escape,vuln-softserve-env,vuln-tcp-forward")
       --client-version string                 The client version string to send (default "OpenSSH_9.8p1")
       --config string                         config file (default is $HOME/.sshamble.json)
   -h, --help                                  help for scan
@@ -132,4 +132,15 @@ Flags:
       --userenum-max-per-session-count uint   The maximum number of authentication atempts per session (default 1023)
       --userenum-test-count uint              The number of tests to apply during username enumeration (default 2500)
   -u, --users string                          The list of usernames to test on each target (comma-separated) (default "root")
+```
+
+The `vuln-musl-crypt-star` check runs by default against OpenSSH servers older than 10.6p2 that offer password authentication. It sends a 300-byte password after confirming that a random short password is rejected, and reports a finding only if the long password opens a session. OpenSSH 10.6p2 documents a workaround for Linux builds that use musl with PAM disabled, where password authentication can succeed for an account whose hash is `*` (distinct from an account locked with `!`).
+
+To test against the local Alpine fixture (see [docs/targets](docs/targets/) for vulnerable test targets):
+
+```console
+$ docker build -t sshamble-musl-crypt-star docs/targets/musl-crypt-star
+$ docker run -d --rm --name sshamble-musl-crypt-star -p 2222:22 sshamble-musl-crypt-star
+$ ./sshamble scan -u alice -p 2222 127.0.0.1
+$ docker stop sshamble-musl-crypt-star
 ```
