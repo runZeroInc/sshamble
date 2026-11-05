@@ -1,5 +1,10 @@
 # vuln-sshhole test targets
 
+![vuln-sshhole demo](demo.gif)
+
+`demo.cast` is the asciinema recording behind the gif. Re-record both with
+`docs/targets/record-demo.sh sshhole` once the target is running.
+
 This directory builds Docker controls for the `vuln-sshhole` check:
 one vulnerable target and four negative controls.
 

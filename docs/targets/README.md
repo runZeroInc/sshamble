@@ -27,6 +27,13 @@ $ ./sshamble scan -u root -p 2201 127.0.0.1
 $ docs/targets/sshhole/run.sh down
 ```
 
+## Demos
+
+`record-demo.sh <target>` records a scan of a running target with asciinema
+and renders it with agg, writing `demo.cast` and `demo.gif` into the
+target's directory. It needs asciinema 3, agg, jq, expect and a built
+`./sshamble` in the repository root.
+
 ## Targets
 
 | Directory | Check | Vulnerability |

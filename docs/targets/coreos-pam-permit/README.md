@@ -1,5 +1,10 @@
 # vuln-coreos-pam-permit test target
 
+![vuln-coreos-pam-permit demo](demo.gif)
+
+`demo.cast` is the asciinema recording behind the gif. Re-record both with
+`docs/targets/record-demo.sh coreos-pam-permit` once the target is running.
+
 This directory contains two Docker images for exercising the
 `vuln-coreos-pam-permit` check: a vulnerable target and a patched control.
 
