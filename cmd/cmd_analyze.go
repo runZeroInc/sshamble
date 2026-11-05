@@ -176,6 +176,10 @@ func (conf *ScanConfig) AnalyzeResult(res *auth.AuthResult, stats *AnalysisStats
 		conf.writeAnalysisRecord("badkeys", res)
 	}
 
+	for _, v := range res.Vulns {
+		conf.writeAnalysisRecord("vuln-"+v.ID, res)
+	}
+
 	// Only write a single record for each session
 	if name := isKnownDevice(conf, res); name != "" {
 		conf.writeAnalysisRecord("session_known_"+name, res)

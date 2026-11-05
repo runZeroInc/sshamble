@@ -16,6 +16,9 @@ func initVulnChecks() {
 	// MikroTik SSH login-helper fd injection (CVE-2026-86060)
 	registerCheck(checkVulnMikrotikFD2Inject, "vuln", false, true)
 
+	// OpenSSH on musl without PAM accepts a 257+ byte password for "*" accounts (sshhole, no CVE)
+	registerCheck(checkVulnSSHHole, "vuln", false, true)
+
 	// MikroTik WebFig unauthenticated file read (CVE-2026-67281) — not yet working
 	// registerCheck(checkVulnMikrotikWebfigTraversal, "vuln", false, true)
 }
