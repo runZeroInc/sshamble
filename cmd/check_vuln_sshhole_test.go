@@ -17,7 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func TestMuslCryptStarVersion(t *testing.T) {
+func TestSSHHoleVersion(t *testing.T) {
 	cases := []struct {
 		version string
 		want    [3]int
@@ -36,18 +36,18 @@ func TestMuslCryptStarVersion(t *testing.T) {
 		{version: "", ok: false},
 	}
 	for _, tc := range cases {
-		got, ok := muslCryptStarVersion(tc.version)
+		got, ok := sshholeVersion(tc.version)
 		if ok != tc.ok {
-			t.Errorf("muslCryptStarVersion(%q) ok = %v, want %v", tc.version, ok, tc.ok)
+			t.Errorf("sshholeVersion(%q) ok = %v, want %v", tc.version, ok, tc.ok)
 			continue
 		}
 		if ok && got != tc.want {
-			t.Errorf("muslCryptStarVersion(%q) = %v, want %v", tc.version, got, tc.want)
+			t.Errorf("sshholeVersion(%q) = %v, want %v", tc.version, got, tc.want)
 		}
 	}
 }
 
-func TestMuslCryptStarVulnerableVersion(t *testing.T) {
+func TestSSHHoleVulnerableVersion(t *testing.T) {
 	cases := []struct {
 		version string
 		want    bool
@@ -69,17 +69,17 @@ func TestMuslCryptStarVulnerableVersion(t *testing.T) {
 		{version: "", want: false},
 	}
 	for _, tc := range cases {
-		if got := muslCryptStarVulnerableVersion(tc.version); got != tc.want {
-			t.Errorf("muslCryptStarVulnerableVersion(%q) = %v, want %v", tc.version, got, tc.want)
+		if got := sshholeVulnerableVersion(tc.version); got != tc.want {
+			t.Errorf("sshholeVulnerableVersion(%q) = %v, want %v", tc.version, got, tc.want)
 		}
 	}
 }
 
-func TestMuslCryptStarPasswords(t *testing.T) {
-	pws := muslCryptStarPasswords()
-	want := append([]int{muslCryptStarControlLen}, muslCryptStarTriggerLens...)
+func TestSSHHolePasswords(t *testing.T) {
+	pws := sshholePasswords()
+	want := append([]int{sshholeControlLen}, sshholeTriggerLens...)
 	if len(pws) != len(want) {
-		t.Fatalf("muslCryptStarPasswords() returned %d passwords, want %d", len(pws), len(want))
+		t.Fatalf("sshholePasswords() returned %d passwords, want %d", len(pws), len(want))
 	}
 	for i, pw := range pws {
 		if len(pw) != want[i] {
@@ -89,12 +89,12 @@ func TestMuslCryptStarPasswords(t *testing.T) {
 			t.Errorf("password %d contains a NUL byte", i)
 		}
 	}
-	if pws[1] == muslCryptStarPasswords()[1] {
+	if pws[1] == sshholePasswords()[1] {
 		t.Errorf("trigger passwords repeat across calls")
 	}
 }
 
-func TestMuslCryptStarClassify(t *testing.T) {
+func TestSSHHoleClassify(t *testing.T) {
 	fail := ssh.AuthResultFailure
 	ok := ssh.AuthResultSuccess
 	partial := ssh.AuthResultPartialSuccess
@@ -114,9 +114,9 @@ func TestMuslCryptStarClassify(t *testing.T) {
 		{"disconnected after first trigger", []ssh.ExpAuthResult{fail, fail}, -1},
 	}
 	for _, tc := range cases {
-		got, reason := muslCryptStarClassify(tc.results)
+		got, reason := sshholeClassify(tc.results)
 		if got != tc.want {
-			t.Errorf("%s: muslCryptStarClassify() = %d (%s), want %d", tc.name, got, reason, tc.want)
+			t.Errorf("%s: sshholeClassify() = %d (%s), want %d", tc.name, got, reason, tc.want)
 		}
 		if got < 0 && reason == "" {
 			t.Errorf("%s: no reason given for a negative result", tc.name)
@@ -124,7 +124,7 @@ func TestMuslCryptStarClassify(t *testing.T) {
 	}
 }
 
-func TestMuslCryptStarMaxAuthTries(t *testing.T) {
+func TestSSHHoleMaxAuthTries(t *testing.T) {
 	cases := []struct {
 		err  error
 		want bool
@@ -136,13 +136,13 @@ func TestMuslCryptStarMaxAuthTries(t *testing.T) {
 		{io.EOF, false},
 	}
 	for _, tc := range cases {
-		if got := muslCryptStarMaxAuthTries(tc.err); got != tc.want {
-			t.Errorf("muslCryptStarMaxAuthTries(%v) = %v, want %v", tc.err, got, tc.want)
+		if got := sshholeMaxAuthTries(tc.err); got != tc.want {
+			t.Errorf("sshholeMaxAuthTries(%v) = %v, want %v", tc.err, got, tc.want)
 		}
 	}
 }
 
-func TestMuslCryptStarExecRan(t *testing.T) {
+func TestSSHHoleExecRan(t *testing.T) {
 	cases := []struct {
 		name   string
 		err    error
@@ -155,9 +155,9 @@ func TestMuslCryptStarExecRan(t *testing.T) {
 		{name: "eof", err: io.EOF, status: "", ran: false},
 	}
 	for _, tc := range cases {
-		status, ran := muslCryptStarExecRan(tc.err)
+		status, ran := sshholeExecRan(tc.err)
 		if ran != tc.ran || status != tc.status {
-			t.Errorf("%s: muslCryptStarExecRan = (%q, %v), want (%q, %v)", tc.name, status, ran, tc.status, tc.ran)
+			t.Errorf("%s: sshholeExecRan = (%q, %v), want (%q, %v)", tc.name, status, ran, tc.status, tc.ran)
 		}
 	}
 }
@@ -285,7 +285,7 @@ func muslTestHarness(t *testing.T, s *muslTestServer, enabled bool) (*ScanConfig
 		Logger:        logger,
 	}
 	if enabled {
-		conf.EnabledChecks[checkVulnMuslCryptStar] = struct{}{}
+		conf.EnabledChecks[checkVulnSSHHole] = struct{}{}
 	}
 
 	host, portStr, _ := net.SplitHostPort(s.addr)
@@ -336,14 +336,14 @@ func muslRequireVuln(t *testing.T, s *muslTestServer, res *auth.AuthResult, root
 	if res.Stage != "session" {
 		t.Fatalf("result stage = %q, want session", res.Stage)
 	}
-	if len(root.Vulns) != 1 || root.Vulns[0].ID != checkVulnMuslCryptStar {
-		t.Fatalf("root vulns = %+v, want one %s entry", root.Vulns, checkVulnMuslCryptStar)
+	if len(root.Vulns) != 1 || root.Vulns[0].ID != checkVulnSSHHole {
+		t.Fatalf("root vulns = %+v, want one %s entry", root.Vulns, checkVulnSSHHole)
 	}
-	if root.SessionMethod != checkVulnMuslCryptStar || res.SessionMethod != checkVulnMuslCryptStar {
-		t.Fatalf("session method = %q / %q, want %s", root.SessionMethod, res.SessionMethod, checkVulnMuslCryptStar)
+	if root.SessionMethod != checkVulnSSHHole || res.SessionMethod != checkVulnSSHHole {
+		t.Fatalf("session method = %q / %q, want %s", root.SessionMethod, res.SessionMethod, checkVulnSSHHole)
 	}
-	if len(root.SessionSecret) != muslCryptStarTriggerLens[0] {
-		t.Fatalf("session secret length = %d, want %d", len(root.SessionSecret), muslCryptStarTriggerLens[0])
+	if len(root.SessionSecret) != sshholeTriggerLens[0] {
+		t.Fatalf("session secret length = %d, want %d", len(root.SessionSecret), sshholeTriggerLens[0])
 	}
 	if !strings.Contains(root.SessionOutput, "uid=1000(alice)") {
 		t.Fatalf("session output = %q, want id output", root.SessionOutput)
@@ -359,45 +359,45 @@ func muslRequireVuln(t *testing.T, s *muslTestServer, res *auth.AuthResult, root
 	}
 }
 
-func TestMuslCryptStarCheckReportsVulnerableServer(t *testing.T) {
+func TestSSHHoleCheckReportsVulnerableServer(t *testing.T) {
 	s := newMuslTestServer(t, "SSH-2.0-OpenSSH_9.7p1", muslAcceptLongAfterFailure)
 	conf, options, root := muslTestHarness(t, s, true)
 
-	res := sshCheckVulnMuslCryptStar(s.addr, conf, options, root)
+	res := sshCheckVulnSSHHole(s.addr, conf, options, root)
 	muslRequireVuln(t, s, res, root)
 	if !strings.Contains(root.Vulns[0].Proof, "on attempt 2") {
 		t.Fatalf("proof = %q, want the reuse check to need a second attempt", root.Vulns[0].Proof)
 	}
 }
 
-func TestMuslCryptStarCheckReportsFirstAttemptServer(t *testing.T) {
+func TestSSHHoleCheckReportsFirstAttemptServer(t *testing.T) {
 	s := newMuslTestServer(t, "SSH-2.0-OpenSSH_9.7p1", muslAcceptLong)
 	conf, options, root := muslTestHarness(t, s, true)
 
-	res := sshCheckVulnMuslCryptStar(s.addr, conf, options, root)
+	res := sshCheckVulnSSHHole(s.addr, conf, options, root)
 	muslRequireVuln(t, s, res, root)
 	if !strings.Contains(root.Vulns[0].Proof, "on attempt 1") {
 		t.Fatalf("proof = %q, want the reuse check to succeed on the first attempt", root.Vulns[0].Proof)
 	}
 }
 
-func TestMuslCryptStarCheckReportsAtMaxAuthTries(t *testing.T) {
+func TestSSHHoleCheckReportsAtMaxAuthTries(t *testing.T) {
 	s := newMuslTestServer(t, "SSH-2.0-OpenSSH_9.7p1", muslAcceptLongAfterFailure)
 	s.maxAuthTries = 2
 	conf, options, root := muslTestHarness(t, s, true)
 
-	res := sshCheckVulnMuslCryptStar(s.addr, conf, options, root)
+	res := sshCheckVulnSSHHole(s.addr, conf, options, root)
 	muslRequireVuln(t, s, res, root)
 }
 
-// TestMuslCryptStarCheckSessionAuthReusable mirrors StartInteract: the cached
+// TestSSHHoleCheckSessionAuthReusable mirrors StartInteract: the cached
 // auth method must open a fresh session that can run commands, even though
 // the first password attempt on every connection fails.
-func TestMuslCryptStarCheckSessionAuthReusable(t *testing.T) {
+func TestSSHHoleCheckSessionAuthReusable(t *testing.T) {
 	s := newMuslTestServer(t, "SSH-2.0-OpenSSH_9.7p1", muslAcceptLongAfterFailure)
 	conf, options, root := muslTestHarness(t, s, true)
 
-	if res := sshCheckVulnMuslCryptStar(s.addr, conf, options, root); res == nil {
+	if res := sshCheckVulnSSHHole(s.addr, conf, options, root); res == nil {
 		t.Fatal("check returned nil against a vulnerable server")
 	}
 
@@ -422,7 +422,7 @@ func TestMuslCryptStarCheckSessionAuthReusable(t *testing.T) {
 	}
 }
 
-func TestMuslCryptStarCheckRejectsPatchedServer(t *testing.T) {
+func TestSSHHoleCheckRejectsPatchedServer(t *testing.T) {
 	for _, maxAuthTries := range []int{0, 2} {
 		t.Run(fmt.Sprintf("maxAuthTries=%d", maxAuthTries), func(t *testing.T) {
 			s := newMuslTestServer(t, "SSH-2.0-OpenSSH_9.7p1", muslAcceptNone)
@@ -430,7 +430,7 @@ func TestMuslCryptStarCheckRejectsPatchedServer(t *testing.T) {
 			conf, options, root := muslTestHarness(t, s, true)
 
 			before := s.conns.Load()
-			if res := sshCheckVulnMuslCryptStar(s.addr, conf, options, root); res != nil {
+			if res := sshCheckVulnSSHHole(s.addr, conf, options, root); res != nil {
 				t.Fatalf("check returned %+v against a server that rejects long passwords", res)
 			}
 			if len(root.Vulns) != 0 {
@@ -446,12 +446,12 @@ func TestMuslCryptStarCheckRejectsPatchedServer(t *testing.T) {
 	}
 }
 
-func TestMuslCryptStarCheckSkipsPasswordAnyServer(t *testing.T) {
+func TestSSHHoleCheckSkipsPasswordAnyServer(t *testing.T) {
 	s := newMuslTestServer(t, "SSH-2.0-OpenSSH_9.7p1", muslAcceptAny)
 	conf, options, root := muslTestHarness(t, s, true)
 
 	before := s.conns.Load()
-	if res := sshCheckVulnMuslCryptStar(s.addr, conf, options, root); res != nil {
+	if res := sshCheckVulnSSHHole(s.addr, conf, options, root); res != nil {
 		t.Fatalf("check returned %+v against a server that accepts any password", res)
 	}
 	if len(root.Vulns) != 0 {
@@ -462,7 +462,7 @@ func TestMuslCryptStarCheckSkipsPasswordAnyServer(t *testing.T) {
 	}
 }
 
-func TestMuslCryptStarCheckSkipsByVersion(t *testing.T) {
+func TestSSHHoleCheckSkipsByVersion(t *testing.T) {
 	cases := []struct {
 		name   string
 		banner string
@@ -478,7 +478,7 @@ func TestMuslCryptStarCheckSkipsByVersion(t *testing.T) {
 			conf, options, root := muslTestHarness(t, s, true)
 
 			before := s.conns.Load()
-			if res := sshCheckVulnMuslCryptStar(s.addr, conf, options, root); res != nil {
+			if res := sshCheckVulnSSHHole(s.addr, conf, options, root); res != nil {
 				t.Fatalf("check returned %+v for banner %q", res, tc.banner)
 			}
 			if len(root.Vulns) != 0 {
@@ -491,12 +491,12 @@ func TestMuslCryptStarCheckSkipsByVersion(t *testing.T) {
 	}
 }
 
-func TestMuslCryptStarCheckDisabled(t *testing.T) {
+func TestSSHHoleCheckDisabled(t *testing.T) {
 	s := newMuslTestServer(t, "SSH-2.0-OpenSSH_9.7p1", muslAcceptLongAfterFailure)
 	conf, options, root := muslTestHarness(t, s, false)
 
 	before := s.conns.Load()
-	if res := sshCheckVulnMuslCryptStar(s.addr, conf, options, root); res != nil {
+	if res := sshCheckVulnSSHHole(s.addr, conf, options, root); res != nil {
 		t.Fatalf("disabled check returned %+v", res)
 	}
 	if got := s.conns.Load() - before; got != 0 {
@@ -504,17 +504,17 @@ func TestMuslCryptStarCheckDisabled(t *testing.T) {
 	}
 }
 
-func TestMuslCryptStarEnabledByDefault(t *testing.T) {
+func TestSSHHoleEnabledByDefault(t *testing.T) {
 	for _, c := range Checks {
-		if c.Name == checkVulnMuslCryptStar {
+		if c.Name == checkVulnSSHHole {
 			if !c.Enabled {
-				t.Fatalf("%s is registered but not enabled by default", checkVulnMuslCryptStar)
+				t.Fatalf("%s is registered but not enabled by default", checkVulnSSHHole)
 			}
 			if c.Category != "vuln" {
-				t.Fatalf("%s category = %q, want vuln", checkVulnMuslCryptStar, c.Category)
+				t.Fatalf("%s category = %q, want vuln", checkVulnSSHHole, c.Category)
 			}
 			return
 		}
 	}
-	t.Fatalf("%s is not registered", checkVulnMuslCryptStar)
+	t.Fatalf("%s is not registered", checkVulnSSHHole)
 }

@@ -14,24 +14,24 @@ docs/targets/<check-name>/
     Dockerfile.patched   (optional: a non-vulnerable control)
 ```
 
-The directory name should match the check name (e.g. `musl-crypt-star` for
-`vuln-musl-crypt-star`, with the `vuln-` prefix dropped).
+The directory name should match the check name (e.g. `sshhole` for
+`vuln-sshhole`, with the `vuln-` prefix dropped).
 
 ## Usage
 
 Build and run a target, then scan it:
 
 ```console
-$ docs/targets/musl-crypt-star/run.sh up
+$ docs/targets/sshhole/run.sh up
 $ ./sshamble scan -u root -p 2201 127.0.0.1
-$ docs/targets/musl-crypt-star/run.sh down
+$ docs/targets/sshhole/run.sh down
 ```
 
 ## Targets
 
 | Directory | Check | Vulnerability |
 |-----------|-------|---------------|
-| [musl-crypt-star](musl-crypt-star/) | `vuln-musl-crypt-star` | OpenSSH < 10.6p2 on musl libc without PAM accepts any 257 to 1024 byte password for accounts whose shadow field is `*` ([sshhole.com](https://sshhole.com/)) |
+| [sshhole](sshhole/) | `vuln-sshhole` | OpenSSH < 10.6p2 on musl libc without PAM accepts any 257 to 1024 byte password for accounts whose shadow field is `*` ([sshhole.com](https://sshhole.com/)) |
 
 ## Adding a new target
 

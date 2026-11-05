@@ -1,4 +1,4 @@
-# vuln-musl-crypt-star negative control on Debian (glibc), PAM off so libc is the only difference.
+# vuln-sshhole negative control on Debian (glibc), PAM off so libc is the only difference.
 ARG DEBIAN_VERSION=13-slim
 FROM debian:${DEBIAN_VERSION}
 RUN set -eux; \

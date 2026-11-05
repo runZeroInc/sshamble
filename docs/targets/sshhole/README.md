@@ -1,6 +1,6 @@
-# vuln-musl-crypt-star test targets
+# vuln-sshhole test targets
 
-This directory builds Docker controls for the `vuln-musl-crypt-star` check:
+This directory builds Docker controls for the `vuln-sshhole` check:
 one vulnerable target and four negative controls.
 
 ## Background
@@ -85,7 +85,7 @@ Build the sshamble binary and start the containers from the repository root:
 
 ```console
 $ go build -o sshamble .
-$ docs/targets/musl-crypt-star/run.sh up
+$ docs/targets/sshhole/run.sh up
 ```
 
 `BIND` (default 127.0.0.1) and `BASE_PORT` (default 2201) set the published
@@ -93,40 +93,40 @@ ports, `ALPINE_VERSION` (default 3.24) picks the Alpine release:
 
 | Port | Container | Expected |
 |------|-----------|----------|
-| 2201 | `musl-crypt-star-alpine-vuln` | vulnerable (root, alpine) |
-| 2202 | `musl-crypt-star-alpine-nohash` | clean |
-| 2203 | `musl-crypt-star-alpine-pam` | clean |
-| 2204 | `musl-crypt-star-alpine-patched` | clean |
-| 2205 | `musl-crypt-star-debian-glibc` | clean |
+| 2201 | `sshhole-alpine-vuln` | vulnerable (root, alpine) |
+| 2202 | `sshhole-alpine-nohash` | clean |
+| 2203 | `sshhole-alpine-pam` | clean |
+| 2204 | `sshhole-alpine-patched` | clean |
+| 2205 | `sshhole-debian-glibc` | clean |
 
 ## Verify the check reports the vulnerable target
 
 ```console
-$ ./sshamble scan -u root,alpine,tester -p 2201 --checks vuln-musl-crypt-star -o vuln.json 127.0.0.1
+$ ./sshamble scan -u root,alpine,tester -p 2201 --checks vuln-sshhole -o vuln.json 127.0.0.1
 ```
 
 The log should contain, for root and alpine only:
 
 ```
-level=warning msg="127.0.0.1:2201 vuln-musl-crypt-star accepted a 257-byte random password for user root"
+level=warning msg="127.0.0.1:2201 vuln-sshhole accepted a 257-byte random password for user root"
 ```
 
 The JSON records for those users carry `sessionMethod` set to
-`vuln-musl-crypt-star` and a `vulns` entry whose proof names the control
+`vuln-sshhole` and a `vulns` entry whose proof names the control
 and trigger lengths, the proof command output, and the attempt on which the
 fresh connection logged in (attempt 2 on these images).
 
 ## Verify the check does not report the controls
 
 ```console
-$ for p in 2202 2203 2204 2205; do ./sshamble scan -u root,alpine -p $p --checks vuln-musl-crypt-star -L debug 127.0.0.1; done
+$ for p in 2202 2203 2204 2205; do ./sshamble scan -u root,alpine -p $p --checks vuln-sshhole -L debug 127.0.0.1; done
 ```
 
 Each run logs the check starting and stopping because every trigger
 password was rejected, and the JSON records carry no `vulns` entry:
 
 ```
-level=debug msg="127.0.0.1:2204 vuln-musl-crypt-star not vulnerable for user root: every trigger password was rejected (stage ssh-userauth: authentication failed: auth-failed)"
+level=debug msg="127.0.0.1:2204 vuln-sshhole not vulnerable for user root: every trigger password was rejected (stage ssh-userauth: authentication failed: auth-failed)"
 ```
 
 ## Verify the version gate
@@ -136,7 +136,7 @@ server, with `-L debug`. The log shows the skip and no password attempts
 are made:
 
 ```
-level=debug msg="HOST:PORT vuln-musl-crypt-star skipped: server version \"SSH-2.0-OpenSSH_10.6p2\" is not a vulnerable OpenSSH release"
+level=debug msg="HOST:PORT vuln-sshhole skipped: server version \"SSH-2.0-OpenSSH_10.6p2\" is not a vulnerable OpenSSH release"
 ```
 
 ## Verify the interactive session
@@ -144,7 +144,7 @@ level=debug msg="HOST:PORT vuln-musl-crypt-star skipped: server version \"SSH-2.
 The cached password is reused to open a new session for interaction:
 
 ```console
-$ ./sshamble scan -u root -p 2201 --checks vuln-musl-crypt-star -I first --interact-auto "exec id" 127.0.0.1
+$ ./sshamble scan -u root -p 2201 --checks vuln-sshhole -I first --interact-auto "exec id" 127.0.0.1
 ```
 
 The output ends with the command result:
@@ -179,11 +179,11 @@ connection for fixed or non-OpenSSH banners, and reuse of the cached
 credential for interaction.
 
 ```console
-$ go test ./cmd/ -run MuslCryptStar -v
+$ go test ./cmd/ -run SSHHole -v
 ```
 
 ## Cleanup
 
 ```console
-$ docs/targets/musl-crypt-star/run.sh down
+$ docs/targets/sshhole/run.sh down
 ```
