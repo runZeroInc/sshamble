@@ -1,4 +1,4 @@
-# sshhole control target on Alpine (musl). VARIANT selects the setup:
+# vuln-musl-crypt-star control target on Alpine (musl). VARIANT selects the setup:
 #   vuln     upstream OpenSSH built from source without PAM, "*" accounts plus one
 #            SHA-512 account (expected vulnerable)
 #   nohash   same build, but no account has a $5$/$6$ hash for pick_salt() to borrow
