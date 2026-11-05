@@ -716,6 +716,7 @@ func (conf *ScanConfig) GetSession(addr string, options *auth.Options, cached *a
 		sshCheckVulnMikrotikPreauthRekey,
 		sshCheckVulnMikrotikFD2Inject,
 		sshCheckVulnSSHHole,
+		sshCheckVulnCoreOSPamPermit,
 		sshCheckVulnExecSkipUserAuth,
 		sshCheckVulnExecSkipAuth,
 	}
@@ -738,6 +739,11 @@ var (
 
 // TestSession tries to gain further access through a SSH session
 func (conf *ScanConfig) TestSession(addr string, options *auth.Options, root *auth.AuthResult) {
+	// Checks may open the session as a different account than the one scanned
+	if root.SessionUser != "" && root.SessionUser != options.Username {
+		options = options.WithUsername(root.SessionUser)
+	}
+
 	// Checks that can lead to deeper access to this session
 	sessionChecks := []sshCheckFunc{
 		sshCheckVulnTCPForward,

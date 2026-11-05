@@ -31,6 +31,7 @@ $ docs/targets/sshhole/run.sh down
 
 | Directory | Check | Vulnerability |
 |-----------|-------|---------------|
+| [coreos-pam-permit](coreos-pam-permit/) | `vuln-coreos-pam-permit` | CoreOS Linux Alpha 1045.0.0 and 1047.0.0 PAM stack falls through to `pam_permit`, so any password logs in as any account (CVE-2016-4455) |
 | [sshhole](sshhole/) | `vuln-sshhole` | OpenSSH < 10.6p2 on musl libc without PAM accepts any 257 to 1024 byte password for accounts whose shadow field is `*` ([sshhole.com](https://sshhole.com/)) |
 
 ## Adding a new target

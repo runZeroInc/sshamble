@@ -37,6 +37,11 @@ func (conf *ScanConfig) StartInteract(addr string, options *auth.Options, root *
 		WithSessionPoke("").
 		WithRetries(10)
 
+	// Checks may open the session as a different account than the one scanned
+	if root.SessionUser != "" && root.SessionUser != options.Username {
+		options = options.WithUsername(root.SessionUser)
+	}
+
 	var res *auth.AuthResult
 	if root.SessionAuth != nil {
 		// Use the ssh.AuthMethod cached on the root session

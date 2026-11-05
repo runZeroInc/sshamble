@@ -19,6 +19,9 @@ func initVulnChecks() {
 	// OpenSSH on musl without PAM accepts a 257+ byte password for "*" accounts (sshhole, no CVE)
 	registerCheck(checkVulnSSHHole, "vuln", false, true)
 
+	// CoreOS Linux Alpha 104x PAM fall-through to pam_permit (CVE-2016-4455)
+	registerCheck(checkVulnCoreOSPamPermit, "vuln", false, true)
+
 	// MikroTik WebFig unauthenticated file read (CVE-2026-67281) — not yet working
 	// registerCheck(checkVulnMikrotikWebfigTraversal, "vuln", false, true)
 }

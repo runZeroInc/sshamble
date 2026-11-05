@@ -1,0 +1,22 @@
+# CoreOS Linux Alpha 1045.0.0 / 1047.0.0 auth stack (system-auth via
+# system-remote-login). Both sufficient modules fail for a password-less
+# account, and the stack then falls through to pam_permit.
+auth       sufficient   pam_sss.so use_first_pass
+auth       sufficient   pam_unix.so try_first_pass nullok
+auth       optional     pam_permit.so
+
+# CoreOS listed pam_sss with [default=bad success=ok user_unknown=ignore].
+# No sssd runs here, so pam_sss returns PAM_AUTHINFO_UNAVAIL, which that
+# control would turn into a denial. authinfo_unavail=ignore keeps the
+# account phase from vetoing the login so the auth stack above decides.
+account    required     pam_unix.so
+account    [default=bad success=ok user_unknown=ignore authinfo_unavail=ignore]   pam_sss.so
+account    optional     pam_permit.so
+
+password   sufficient   pam_unix.so try_first_pass nullok
+password   sufficient   pam_sss.so use_authtok
+password   optional     pam_permit.so
+
+session    required     pam_unix.so
+session    optional     pam_permit.so
+session    optional     pam_sss.so

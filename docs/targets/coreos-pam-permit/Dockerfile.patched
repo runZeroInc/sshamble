@@ -1,0 +1,13 @@
+# Patched control for the vuln-coreos-pam-permit check.
+#
+# Same image as the vulnerable target, but the auth stack ends with
+# "auth required pam_deny.so" as CoreOS Linux Alpha 1053.0.0 does. The
+# banner is still SSH-2.0-OpenSSH_7.2, so the check runs but must not
+# report a finding.
+#
+# Build:  docker build -t sshamble-coreos-pam-permit-patched -f docs/targets/coreos-pam-permit/Dockerfile.patched docs/targets/coreos-pam-permit
+# Run:    docker run -d --rm --name sshamble-coreos-pam-permit-patched -p 2225:22 sshamble-coreos-pam-permit-patched
+# Scan:   ./sshamble scan -u core -p 2225 127.0.0.1
+FROM sshamble-coreos-pam-permit
+
+COPY pam.d-sshd-patched /etc/pam.d/sshd

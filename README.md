@@ -104,7 +104,7 @@ Usage:
 
 Flags:
       --categories string                     The list of categories to include. (default "bypass,gssapi,hostkey,keyboard,password,pubkey,userenum,vuln")
-      --checks string                         The list of checks to run. Non-default ("userenum-none-timing,userenum-password-timing,userenum-pubkey-timing,vuln-exec-skip-auth,vuln-exec-skip-userauth") (default "badkeys-blocklist,gssapi-any,keyboard-any,keyboard-empty,keyboard-null,keyboard-user,password-any,password-change-empty,password-change-null,password-empty,password-null,password-user,pubkey-any,pubkey-bulkhalf,pubkey-hunt,pubkey-user,skip-auth,skip-auth-method-empty,skip-auth-method-null,skip-auth-none,skip-auth-pubkeyany,skip-auth-success,skip-ssh-userauth,vuln-generic-env,vuln-gogs-env,vuln-mikrotik-fd2-inject,vuln-mikrotik-preauth-rekey,vuln-mikrotik-pubkey-bypass,vuln-ruckus-password-escape,vuln-softserve-env,vuln-sshhole,vuln-tcp-forward")
+      --checks string                         The list of checks to run. Non-default ("userenum-none-timing,userenum-password-timing,userenum-pubkey-timing,vuln-exec-skip-auth,vuln-exec-skip-userauth") (default "badkeys-blocklist,gssapi-any,keyboard-any,keyboard-empty,keyboard-null,keyboard-user,password-any,password-change-empty,password-change-null,password-empty,password-null,password-user,pubkey-any,pubkey-bulkhalf,pubkey-hunt,pubkey-user,skip-auth,skip-auth-method-empty,skip-auth-method-null,skip-auth-none,skip-auth-pubkeyany,skip-auth-success,skip-ssh-userauth,vuln-coreos-pam-permit,vuln-generic-env,vuln-gogs-env,vuln-mikrotik-fd2-inject,vuln-mikrotik-preauth-rekey,vuln-mikrotik-pubkey-bypass,vuln-ruckus-password-escape,vuln-softserve-env,vuln-sshhole,vuln-tcp-forward")
       --client-version string                 The client version string to send (default "OpenSSH_9.8p1")
       --config string                         config file (default is $HOME/.sshamble.json)
   -h, --help                                  help for scan
@@ -143,3 +143,5 @@ $ docs/targets/sshhole/run.sh up
 $ ./sshamble scan -u root -p 2201 127.0.0.1
 $ docs/targets/sshhole/run.sh down
 ```
+
+The `vuln-coreos-pam-permit` check runs by default against servers announcing `SSH-2.0-OpenSSH_7.2`, the banner of the OpenSSH 7.2p2 build in CoreOS Linux Alpha 1045.0.0 and 1047.0.0 (CVE-2016-4455). Those releases ended the PAM auth stack with `pam_permit`, so any password opened a session for any account. The check tries the scanned user and then the CoreOS `core` and `operator` accounts with a random password over keyboard-interactive and password auth, and reports a finding only if a session opens and runs a command. See [docs/targets/coreos-pam-permit](docs/targets/coreos-pam-permit/) for a test target.

@@ -1,0 +1,10 @@
+# Gentoo/CoreOS defaults for OpenSSH 7.2p2 with PAM enabled.
+UsePAM yes
+PasswordAuthentication no
+ChallengeResponseAuthentication yes
+PermitRootLogin prohibit-password
+UsePrivilegeSeparation sandbox
+PrintMotd no
+PrintLastLog no
+UseDNS no
+Subsystem sftp internal-sftp
