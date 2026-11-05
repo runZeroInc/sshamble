@@ -715,9 +715,9 @@ func (conf *ScanConfig) GetSession(addr string, options *auth.Options, cached *a
 		sshCheckVulnMikrotikPubkey,
 		sshCheckVulnMikrotikPreauthRekey,
 		sshCheckVulnMikrotikFD2Inject,
+		sshCheckVulnMuslCryptStar,
 		sshCheckVulnExecSkipUserAuth,
 		sshCheckVulnExecSkipAuth,
-		sshCheckVulnSSHHole,
 	}
 	for _, check := range vulnChecks {
 		res = check(addr, conf, options, root)

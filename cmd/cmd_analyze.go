@@ -176,8 +176,9 @@ func (conf *ScanConfig) AnalyzeResult(res *auth.AuthResult, stats *AnalysisStats
 		conf.writeAnalysisRecord("badkeys", res)
 	}
 
+	// Vuln IDs already carry their category prefix, such as vuln-tcp-forward
 	for _, v := range res.Vulns {
-		conf.writeAnalysisRecord("vuln-"+v.ID, res)
+		conf.writeAnalysisRecord(v.ID, res)
 	}
 
 	// Only write a single record for each session
