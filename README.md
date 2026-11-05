@@ -104,7 +104,7 @@ Usage:
 
 Flags:
       --categories string                     The list of categories to include. (default "bypass,gssapi,hostkey,keyboard,password,pubkey,userenum,vuln")
-      --checks string                         The list of checks to run. Non-default ("userenum-none-timing,userenum-password-timing,userenum-pubkey-timing,vuln-exec-skip-auth,vuln-exec-skip-userauth") (default "badkeys-blocklist,gssapi-any,keyboard-any,keyboard-empty,keyboard-null,keyboard-user,password-any,password-change-empty,password-change-null,password-empty,password-null,password-user,pubkey-any,pubkey-bulkhalf,pubkey-hunt,pubkey-user,skip-auth,skip-auth-method-empty,skip-auth-method-null,skip-auth-none,skip-auth-pubkeyany,skip-auth-success,skip-ssh-userauth,vuln-generic-env,vuln-gogs-env,vuln-ruckus-password-escape,vuln-softserve-env,vuln-tcp-forward")
+      --checks string                         The list of checks to run. Non-default ("userenum-none-timing,userenum-password-timing,userenum-pubkey-timing,vuln-exec-skip-auth,vuln-exec-skip-userauth") (default "badkeys-blocklist,gssapi-any,keyboard-any,keyboard-empty,keyboard-null,keyboard-user,password-any,password-change-empty,password-change-null,password-empty,password-null,password-user,pubkey-any,pubkey-bulkhalf,pubkey-hunt,pubkey-user,skip-auth,skip-auth-method-empty,skip-auth-method-null,skip-auth-none,skip-auth-pubkeyany,skip-auth-success,skip-ssh-userauth,vuln-generic-env,vuln-gogs-env,vuln-mikrotik-fd2-inject,vuln-mikrotik-preauth-rekey,vuln-mikrotik-pubkey-bypass,vuln-ruckus-password-escape,vuln-softserve-env,vuln-sshhole,vuln-tcp-forward")
       --client-version string                 The client version string to send (default "OpenSSH_9.8p1")
       --config string                         config file (default is $HOME/.sshamble.json)
   -h, --help                                  help for scan
@@ -132,4 +132,14 @@ Flags:
       --userenum-max-per-session-count uint   The maximum number of authentication atempts per session (default 1023)
       --userenum-test-count uint              The number of tests to apply during username enumeration (default 2500)
   -u, --users string                          The list of usernames to test on each target (comma-separated) (default "root")
+```
+
+The `vuln-sshhole` check runs by default against OpenSSH servers older than 10.6p2 that offer password authentication. On one connection it sends a 256-byte random control password that must be rejected, then a 257-byte and, if needed, a 1024-byte random password, and reports a finding only when a longer password is accepted. OpenSSH sshd built against musl libc with PAM disabled accepts any 257 to 1024 byte password for an account whose shadow field is `*` (distinct from an account locked with `!`), see [sshhole.com](https://sshhole.com/). The first attempt on each connection always fails on affected servers, so the cached session credential resends the password once.
+
+To test against the local Docker fixtures (see [docs/targets](docs/targets/) for vulnerable test targets):
+
+```console
+$ docs/targets/sshhole/run.sh up
+$ ./sshamble scan -u root -p 2201 127.0.0.1
+$ docs/targets/sshhole/run.sh down
 ```

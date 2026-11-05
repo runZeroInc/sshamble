@@ -1,0 +1,19 @@
+# vuln-sshhole negative control on Debian (glibc), PAM off so libc is the only difference.
+ARG DEBIAN_VERSION=13-slim
+FROM debian:${DEBIAN_VERSION}
+RUN set -eux; \
+	apt-get update; \
+	apt-get install -y --no-install-recommends openssh-server; \
+	rm -rf /var/lib/apt/lists/*; \
+	mkdir -p /run/sshd; \
+	printf 'PasswordAuthentication yes\nPermitRootLogin yes\nUsePAM no\nPerSourcePenalties no\n' > /tmp/head; \
+	grep -v '^UsePAM' /etc/ssh/sshd_config >> /tmp/head; \
+	mv /tmp/head /etc/ssh/sshd_config; \
+	useradd -m -s /bin/sh alpine; \
+	useradd -m -s /bin/sh tester; \
+	echo 'tester:sshhole-fixture' | chpasswd -c SHA512; \
+	usermod -p '*' root; \
+	usermod -p '*' alpine; \
+	grep -E '^(root|alpine|tester):' /etc/shadow | cut -c1-24
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D", "-e"]

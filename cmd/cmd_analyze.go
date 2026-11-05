@@ -176,6 +176,11 @@ func (conf *ScanConfig) AnalyzeResult(res *auth.AuthResult, stats *AnalysisStats
 		conf.writeAnalysisRecord("badkeys", res)
 	}
 
+	// Vuln IDs already carry their category prefix, such as vuln-tcp-forward
+	for _, v := range res.Vulns {
+		conf.writeAnalysisRecord(v.ID, res)
+	}
+
 	// Only write a single record for each session
 	if name := isKnownDevice(conf, res); name != "" {
 		conf.writeAnalysisRecord("session_known_"+name, res)

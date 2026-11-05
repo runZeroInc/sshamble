@@ -1,0 +1,19 @@
+# vuln-sshhole control target on Alpine (musl). VARIANT selects the setup:
+#   vuln     upstream OpenSSH built from source without PAM, "*" accounts plus one
+#            SHA-512 account (expected vulnerable)
+#   nohash   same build, but no account has a $5$/$6$ hash for pick_salt() to borrow
+#            (expected clean)
+#   pam      upstream OpenSSH built from source with PAM, UsePAM yes (expected clean)
+#   patched  Alpine's openssh-server package, which carries the upstream fix as
+#            pw.patch since 2026-11-05 (expected clean)
+# Alpine's own packages are all patched now, so the unpatched builds come from the
+# upstream tarball, pinned to the sha512 in Alpine's APKBUILD.
+ARG ALPINE_VERSION=3.24
+FROM alpine:${ALPINE_VERSION}
+ARG VARIANT=vuln
+ARG OPENSSH_VERSION=10.3p1
+ARG OPENSSH_SHA512=cb2bd67086491c25e305879b924c3dfa8236502a60c7f250b2fd17d2d9a79ebfc2e40b2f43e42dcf598cc510996e00cc03df9b8e38f34bc2dc71a3d4ff3788fa
+COPY setup-alpine.sh /setup-alpine.sh
+RUN VARIANT=${VARIANT} OPENSSH_VERSION=${OPENSSH_VERSION} OPENSSH_SHA512=${OPENSSH_SHA512} sh /setup-alpine.sh
+EXPOSE 22
+CMD ["/start-sshd"]

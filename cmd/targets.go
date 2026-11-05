@@ -51,7 +51,6 @@ func parseTargets(input string) ([]string, error) {
 			} else {
 				res = append(res, base.String())
 			}
-			res = append(res, base.String())
 			base = base.Next()
 		}
 	}
