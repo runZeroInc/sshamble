@@ -65,6 +65,10 @@ func sshCheckVulnSSHHole(addr string, conf *ScanConfig, options *auth.Options, r
 		for i, pw := range passwords {
 			ares, methods, err := uac.Authenticate(ssh.Password(pw), extensions)
 			if err != nil {
+				// At MaxAuthTries the server rejects the attempt by disconnecting instead of replying.
+				if strings.Contains(err.Error(), "Too many authentication failures") {
+					results = append(results, ssh.AuthResultFailure)
+				}
 				return err
 			}
 			results = append(results, ares)
@@ -193,7 +197,7 @@ func sshholeClassify(results []ssh.ExpAuthResult) (int, string) {
 		}
 	}
 	if len(results) < 1+len(sshholeTriggerLens) {
-		return -1, "disconnected before every trigger password was tried"
+		return -1, fmt.Sprintf("disconnected after %d of %d password attempts were rejected", len(results), 1+len(sshholeTriggerLens))
 	}
 	return -1, "every trigger password was rejected"
 }
