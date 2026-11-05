@@ -1,7 +1,5 @@
 name: Build and upload binaries
 on:
-  release:
-    types: [published]
   push:
   pull_request:
 permissions:
@@ -55,7 +53,7 @@ jobs:
           path: sshamble-*
   upload:
     name: Upload release binaries
-    if: github.event_name == 'release'
+    if: startsWith(github.ref, 'refs/tags/')
     needs: build
     permissions:
       contents: write
@@ -67,7 +65,7 @@ jobs:
           pattern: sshamble-binaries-*
           merge-multiple: true
       - name: Upload release artifacts
-        run: gh release upload "$GITHUB_REF_NAME" sshamble-*
+        run: gh release create "$GITHUB_REF_NAME" sshamble-* --verify-tag --generate-notes
         env:
           GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
