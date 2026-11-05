@@ -33,6 +33,7 @@ type AuthResult struct {
 	ExitStatus                    string             `json:"sessionExitStatus,omitempty"`
 	SessionOutput                 string             `json:"sessionOutput,omitempty"`
 	SessionMethod                 string             `json:"sessionMethod,omitempty"`
+	SessionUser                   string             `json:"sessionUser,omitempty"`
 	SessionSecret                 string             `json:"sessionSecret,omitempty"`
 	PubKeyHalfAuthLimit           int                `json:"pubKeyHalfAuthLimit,omitempty"`
 	PubKeyHuntResults             []string           `json:"pubKeyHuntResults,omitempty"`
